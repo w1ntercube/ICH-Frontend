@@ -1,0 +1,154 @@
+<template>
+  <view class="container">
+    <!-- 图片滑动栏 -->
+    <swiper
+      class="swiper"
+      indicator-dots="true"
+      autoplay="true"
+      interval="3000"
+      duration="500"
+	  circular="true"
+    >
+      <swiper-item>
+        <image class="swiper-image" src="/static/images/slide-1.png" mode="aspectFill"></image>
+      </swiper-item>
+      <swiper-item>
+        <image class="swiper-image" src="/static/images/slide-2.png" mode="aspectFill"></image>
+      </swiper-item>
+    </swiper>
+	
+	    <!-- 三个并行按钮 -->
+	    <view class="button-group">
+
+	      <view class="button-item" @click="goToPage('events')">
+	        <view class="button-background">
+	        <image class="button-icon" src="/static/images/events.png"></image>
+	        <text class="button-text">传艺方圆</text>
+			</view>
+	      </view>
+	
+	      <view class="button-item" @click="goToPage('shop')">
+	        <view class="button-background">
+	        <image class="button-icon" src="/static/images/shop.png"></image>
+	        <text class="button-text">匠心珍选</text>
+			</view>
+	      </view>
+	
+	      <view class="button-item" @click="goToPage('AI-Q&A')">
+			<view class="button-background">
+	        <image class="button-icon" src="/static/images/AI-Q&A.png"></image>
+	        <text class="button-text">韵宝知晓</text>
+			</view>
+	      </view>
+	    </view>
+	
+    <image class="corner-image" src="/static/images/little-girl.png"></image>
+    <!-- 其余页面内容 -->
+	
+	
+  </view>
+</template>
+
+<script>
+export default {
+  methods: {
+    goToPage(page) {
+      uni.navigateTo({
+        url: `/pages/${page}/${page}`
+      });
+    }
+  }
+};
+</script>
+
+<style>
+/* 页面整体容器 */
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  padding-top: 20px;
+}
+
+/* 滑动栏样式 */
+.swiper {
+  width: 100%;
+  height: 200px;
+  margin-bottom: 20px;
+}
+
+.swiper-image {
+  width: 100%;
+  height: 100%;
+}
+
+/* 指示器样式覆盖 */
+.swiper .swiper-pagination-bullet {
+}
+
+.swiper .swiper-pagination-bullet-active {
+}
+
+/* 右下角覆盖的图片样式 */
+.corner-image {
+  position: absolute;
+  top: 140px; 
+  right: 10px; 
+  width: 80px;
+  height: 80px;
+}
+
+/* 按钮组样式 */
+.button-group {
+  display: flex;
+  flex-direction: row; /* 水平排列按钮 */
+  justify-content: space-between; 
+  width: 100%; 
+  padding: 10px 20px; 
+
+}
+
+/* 单个按钮样式 */
+.button-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 100px;
+}
+
+/* 按钮图标 */
+.button-icon {
+  width: 60px;
+  height: 60px;
+  margin-bottom: 8px;
+}
+
+/* 按钮背景样式 */
+.button-background {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100px; /* 按钮背景宽度 */
+  height: 120px; /* 按钮背景高度 */
+  background-color: #fedec8; /* 圆角矩阵背景色 */
+  border-radius: 30px; /* 圆角效果 */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 阴影效果 */
+}
+
+/* 按钮文字 */
+.button-text {
+  font-size: 14px;
+  color: #333;
+}
+
+/* 其余内容样式 */
+.text {
+  font-size: 50px;
+  color: ##bf7977;
+}
+
+</style>

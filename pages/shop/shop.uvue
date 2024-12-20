@@ -1,0 +1,26 @@
+<template>
+  <view class="container">
+    <text class="text">页面：5</text>
+  </view>
+</template>
+
+<script>
+export default {
+  data() {
+    return {};
+  }
+};
+</script>
+
+<style>
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+.text {
+  font-size: 50px;
+  color: #bf7977;
+}
+</style>

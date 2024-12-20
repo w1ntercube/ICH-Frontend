@@ -1,0 +1,65 @@
+{
+  "pages": [
+    {
+      "path": "pages/home/home",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/posts/posts",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/user/user",
+      "style": {
+        "navigationStyle": "custom"
+      }
+	},
+    {
+      "path": "pages/events/events",
+      "style": {
+        "navigationBarTitleText": "传艺方圆"
+      }
+    },
+    {
+      "path": "pages/shop/shop",
+      "style": {
+        "navigationBarTitleText": "匠心珍选"
+      }
+    },
+    {
+      "path": "pages/AI-Q&A/AI-Q&A",
+      "style": {
+        "navigationBarTitleText": "韵宝知晓"
+      }
+    }
+  ],
+  "tabBar": {
+    "color": "#7A7E83",
+    "selectedColor": "#bf7977",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "iconPath": "static/images/home.png",
+        "selectedIconPath": "static/images/home.png",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/posts/posts",
+        "iconPath": "static/images/posts.png",
+        "selectedIconPath": "static/images/posts.png",
+        "text": "帖子"
+      },
+      {
+        "pagePath": "pages/user/user",
+        "iconPath": "static/images/user.png",
+        "selectedIconPath": "static/images/user.png",
+        "text": "用户"
+      }
+    ]
+  }
