@@ -69,6 +69,7 @@ export default {
   align-items: center;
   height: 100%;
   padding-top: 20px;
+  background-color: rgb(255, 250, 242); /* 设置页面背景色 */
 }
 
 /* 滑动栏样式 */
@@ -105,8 +106,8 @@ export default {
   flex-direction: row; /* 水平排列按钮 */
   justify-content: space-between; 
   width: 100%; 
-  padding: 10px 20px; 
-
+  padding: 5px 20px; 
+  border-radius: 10px; /* 添加圆角，数字越大圆角越明显 */
 }
 
 /* 单个按钮样式 */
@@ -115,8 +116,9 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 80px;
-  height: 100px;
+  width: 90px;
+  height: 130px;
+  border-radius: 10px;
 }
 
 /* 按钮图标 */
