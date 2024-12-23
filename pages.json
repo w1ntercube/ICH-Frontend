@@ -71,21 +71,21 @@
     {
 		"path" : "pages/shop/ProductDetail/ProductDetail",
 		"style": {
-			"navigationBarTitleText": ""
+			"navigationBarTitleText": "商品详情"
 		}
 	},
 	{
 		"path" : "pages/login/register/register",
 		"style" : 
 		{
-			"navigationBarTitleText" : ""
+			"navigationBarTitleText" : "custom"
 		}
 	},
 	{
 		"path" : "pages/login/verifyLogin/verifyLogin",
 		"style" : 
 		{
-			"navigationBarTitleText" : ""
+			"navigationBarTitleText" : "custom"
     }
   },
 	{
@@ -99,49 +99,49 @@
 		"path" : "pages/user/likePost/likePost",
 		"style" : 
 		{
-			"navigationBarTitleText" : ""
+			"navigationBarTitleText" : "我点赞的帖子"
 		}
 	},
 	{
 		"path" : "pages/user/publishProduct/publishProduct",
 		"style" : 
 		{
-			"navigationBarTitleText" : ""
+			"navigationBarTitleText" : "发布商品"
 		}
 	},
 	{
 		"path" : "pages/user/favouritePost/favouritePost",
 		"style" : 
 		{
-			"navigationBarTitleText" : ""
+			"navigationBarTitleText" : "我收藏的帖子 "
 		}
 	},
 	{
 		"path" : "pages/user/publishPost/publishPost",
 		"style" : 
 		{
-			"navigationBarTitleText" : ""
+			"navigationBarTitleText" : "发布帖子"
 		}
 	},
 	{
 		"path" : "pages/user/deleteEvent/deleteEvent",
 		"style" : 
 		{
-			"navigationBarTitleText" : ""
+			"navigationBarTitleText" : "删除活动"
 		}
 	},
 	{
 		"path" : "pages/user/changeEvent/changeEvent",
 		"style" : 
 		{
-			"navigationBarTitleText" : ""
+			"navigationBarTitleText" : "修改活动"
 		}
 	},
 	{
 		"path" : "pages/user/publishEvent/publishEvent",
 		"style" : 
 		{
-			"navigationBarTitleText" : ""
+			"navigationBarTitleText" : "发布活动"
 		}
 	},
 	{
