@@ -6,8 +6,8 @@
     <div class="form-group">
       <label>上传图片</label>
       <button class="upload-button" @click="triggerFileInput">选择图片</button>
-      <input type="file" id="image-upload" ref="fileInput" @change="handleFileChange" hidden />
-      <p v-if="selectedFile" class="file-name">已选择文件: {{ selectedFile.name }}</p>
+      <input type="file" id="image-upload" ref="fileInput" hidden />
+      <p v-if="selectedFile" class="file-name">已选择文件: {{ selectedFile }}</p>
     </div>
 
     <!-- 帖子标题 -->
@@ -45,64 +45,92 @@ export default {
       selectedFile: null, // 上传的图片文件
     };
   },
-  methods: {
-    // 触发文件选择框
-    triggerFileInput() {
-      this.$refs.fileInput.click();
-    },
-    // 处理文件上传
-    handleFileChange(event) {
-      const file = event.target.files[0];
-      if (file) {
-        this.selectedFile = file;
+methods: {
+  // 触发文件选择框
+  triggerFileInput() {
+    uni.chooseImage({
+      count: 1, // 选择一张图片
+      success: (res) => {
+        const tempFilePath = res.tempFilePaths[0]; // 获取选中的图片路径
+        this.selectedFile = tempFilePath; // 上传文件
+      },
+      fail: (err) => {
+        console.error('选择图片失败:', err);
       }
-    },
-    // 提交帖子
-    async submitPost() {
-      if (!this.title || !this.content || !this.selectedFile) {
-        alert("请填写所有字段并上传图片");
+    });
+  },
+
+  // 提交帖子
+  async submitPost() {
+    if (!this.title || !this.content || !this.selectedFile) {
+      alert("请填写所有字段并上传图片");
+      return;
+    }
+
+    try {
+      const token = uni.getStorageSync('token');
+      if (!token) {
+        alert("用户未登录，请先登录");
         return;
       }
 
-      try {
-        const formData = new FormData();
-        formData.append("file", this.selectedFile);
-        formData.append("title", this.title);
-        formData.append("content", this.content);
-
-        const token = localStorage.getItem("token"); // 从 localStorage 获取 token
-        if (!token) {
-          alert("用户未登录，请先登录");
-          return;
-        }
-
-        const response = await fetch("http://localhost:8080/api/post/createPost", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
+      // 1. 上传图片到后端获取图片 URL
+      const uploadResponse = await new Promise((resolve, reject) => {
+        uni.uploadFile({
+          url: 'http://localhost:8080/api/post/uploadImage', // 图片上传接口
+          filePath: this.selectedFile, // 图片文件路径
+          name: 'file', // 后端接收文件的字段名
+          header: {
+            Authorization: `${token}`,
           },
-          body: formData,
+          success: (uploadRes) => {
+            resolve(uploadRes);
+          },
+          fail: (err) => {
+            reject(err);
+          }
         });
+      });
 
-        if (response.ok) {
-          const data = await response.json();
-          alert("帖子创建成功");
-		  uni.navigateTo({
-		      url: `/pages/posts/post`,
-		    });
-		  
-          // 跳转到帖子详情页面或其他页面
-          this.$router.push(`/posts/${data.id}`);
-        } else {
-          const error = await response.json();
-          alert(`创建帖子失败: ${error.message}`);
-        }
-      } catch (error) {
-        console.error("提交失败:", error);
-        alert("创建帖子时发生错误，请稍后再试");
+      const uploadData = JSON.parse(uploadResponse.data);
+      if (uploadData.success) {
+        const imageUrl = uploadData.imageUrl; // 获取上传后的图片 URL
+        // 2. 提交帖子，包含图片 URL
+        const postResponse = await uni.request({
+          url: 'http://localhost:8080/api/post/createPost',
+          method: 'POST',
+          data: {
+            title: this.title,
+            content: this.content,
+            imageUrl: imageUrl,  // 传递图片 URL
+          },
+          header: {
+			'Content-Type': 'application/json' , 
+            Authorization: `${token}`,
+          },
+          success: (res) => {
+            if (res.statusCode === 201) {
+              alert("帖子创建成功");
+              uni.navigateTo({
+                url: `/pages/posts/posts`,
+              });
+            } else {
+              console.log(`创建帖子失败: ${JSON.stringify(res.data)}`);
+            }
+          },
+          fail: (err) => {
+            alert("提交失败");
+          }
+        });
+      } else {
+        alert("图片上传失败");
       }
-    },
-  },
+    } catch (error) {
+      console.error("提交失败:", error.message);
+      alert("创建帖子时发生错误，请稍后再试");
+    }
+  }
+},
 };
 </script>
 
@@ -152,6 +180,7 @@ textarea {
 
 .upload-button {
   display: inline-block;
+  align-items: center;
   padding: 10px 15px;
   background-color: lightgray;
   color: #fff;

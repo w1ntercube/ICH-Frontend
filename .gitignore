@@ -40,3 +40,4 @@ Thumbs.db
 # 其他生成的文件
 *.apk
 *.ipa
+/unpackage

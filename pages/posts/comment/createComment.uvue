@@ -18,11 +18,17 @@
 </template>
 
 <script>
+import axios from "axios"; // 引入 axios
+
 export default {
   data() {
     return {
+	  postId: null,
       content: "", // 评论内容
     };
+  },
+  onLoad(query){
+  	this.postId = query.postId;
   },
   methods: {
     // 提交评论
@@ -35,12 +41,11 @@ export default {
         return;
       }
 
-      const postId = this.$route.params.postId; // 从路由获取帖子的ID
-
+	  console.log(this.postId);
       const commentCreateDTO = {
         content: this.content,
       };
-
+	  console.log(commentCreateDTO);
       try {
         const token = uni.getStorageSync("token"); // 从 uni-app 本地存储获取 token
         if (!token) {
@@ -51,27 +56,28 @@ export default {
           return;
         }
 
-        const response = await uni.request({
-          url: `http://localhost:8080/api/comment/${postId}`,
-          method: "POST",
-          header: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          data: commentCreateDTO,
-        });
+        const response = await axios.post(
+          `http://localhost:8080/api/comment/${this.postId}`,
+          commentCreateDTO,
+          {
+            headers: {
+              Authorization: `${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-        if (response[1].statusCode === 200) {
+        if (response.status === 201) {
           uni.showToast({
             title: "评论成功",
             icon: "success",
           });
           uni.navigateTo({
-            url: `/pages/posts/postDetail/postDetail?postId=${postId}`, // 跳转到帖子详情页
+            url: `/pages/posts/postDetail/postDetail?postId=${this.postId}`, // 跳转到帖子详情页
           });
         } else {
           uni.showToast({
-            title: `创建评论失败: ${response[1].data.message}`,
+            title: `创建评论失败: ${response.data.message}`,
             icon: "none",
           });
         }
@@ -86,6 +92,7 @@ export default {
   },
 };
 </script>
+
 
 <style>
 .create-comment-container {
