@@ -1,26 +1,443 @@
 <template>
   <view class="container">
-    <text class="text">页面：3</text>
+    <view class="user-info">
+      <!-- 用户头像 -->
+      <image class="avatar" :src="userInfo.profilePicture || defaultAvatar" alt="头像" @click="uploadAvatar" />
+      
+      <!-- 右上角的用户名和身份 -->
+      <view class="user-details">
+        <view class="username">
+          <!-- 当不在编辑状态时显示用户名，当编辑时显示输入框 -->
+          <text v-if="!isEditingUsername" @click="editUsername">{{ userInfo.username }}</text>
+          <input
+            v-if="isEditingUsername"
+            v-model="newUsername"
+            class="edit-input"
+            type="text"
+            @blur="saveUsername"
+            @keyup.enter="saveUsername"
+            placeholder="请输入新用户名"
+          />
+        </view>
+        <view class="role">{{ displayRole }}</view> <!-- 使用计算属性来动态显示角色 -->
+      </view>
+      
+      <!-- 用户简介 -->
+      <view class="bio-container">
+        <view class="white-box" @click="enterEditBio">
+          <text class="bio" v-if="!isEditingBio">{{ userInfo.bio || '没有个人简介' }}</text>
+          <textarea
+            v-if="isEditingBio"
+            v-model="newBio"
+            class="bio-input"
+            @blur="saveBio"
+            @keyup.enter="saveBio"
+            placeholder="请输入个人简介"
+          />
+        </view>
+      </view>
+    </view>
+
+    <!-- 下方的按钮 -->
+    <view class="button-container">
+          <button class="action-button" v-for="(button, index) in buttons" :key="index">
+            <text>{{ button }}</text>
+			 <image src="/static/images/详情.png" alt="详情图标" class="button-icon" />
+          </button>
+        </view>
   </view>
 </template>
 
 <script>
 export default {
   data() {
-    return {};
+    return {
+      defaultAvatar: 'https://example.com/default-avatar.jpg', // 默认头像 URL
+      userInfo: {
+        username: '',
+        bio: '',
+        profilePicture: null,
+        role: '', // 用户身份
+      },
+      isEditingUsername: false, // 是否在编辑用户名
+      isEditingBio: false, // 是否在编辑简介
+      newUsername: '', // 存储修改后的用户名
+      newBio: '', // 存储修改后的简介
+      buttons: ['按钮1', '按钮2', '按钮3', '按钮4', '按钮5'],
+    };
+  },
+  computed: {
+    // 根据 role 显示不同的角色文本
+    displayRole() {
+      if (this.userInfo.role === 'ADMIN') {
+        return '管理员';
+      } else if (this.userInfo.role === 'APPRAISER') {
+        return '非遗品鉴官';
+      } else {
+        return '非遗传承人';
+      }
+    }
+  },
+  methods: {
+    // 获取用户信息
+    getUserInfo() {
+      const token = uni.getStorageSync('token'); // 从本地存储获取 token
+      uni.request({
+        url: 'http://localhost:8080/api/user/getInfo',
+        method: 'GET',
+        header: {
+          'Content-Type': 'application/json',
+          'Authorization': `${token}`, // 添加 Authorization
+        },
+        success: (res) => {
+          if (res.statusCode === 200) {
+            this.userInfo = res.data.data; // 更新用户信息
+          } else {
+            console.error('请求失败，状态码:', res.statusCode);
+          }
+        },
+        fail: (err) => {
+          console.error('请求失败:', err);
+        },
+      });
+    },
+
+    // 上传头像
+    uploadAvatar() {
+      uni.chooseImage({
+        count: 1, // 选择一张图片
+        success: (res) => {
+          const tempFilePath = res.tempFilePaths[0]; // 获取选中的图片路径
+          this.uploadFileToServer(tempFilePath); // 上传文件
+        },
+        fail: (err) => {
+          console.error('选择图片失败:', err);
+        }
+      });
+    },
+    
+    // 上传文件到服务器
+    uploadFileToServer(filePath) {
+      const token = uni.getStorageSync('token'); // 获取 token
+      uni.uploadFile({
+        url: 'http://localhost:8080/api/user/uploadPicture', // 上传头像接口
+        filePath: filePath, // 传递选中的图片路径
+        name: 'image', // 这里传递字段名为 image
+        header: {
+          'Authorization': `${token}`, // 添加 Authorization
+        },
+        success: (res) => {
+          if (res.statusCode === 200) {
+            let response;
+            try {
+              response = JSON.parse(res.data); // 假设服务器返回 JSON 格式
+              uni.showToast({
+                title: '头像上传成功',
+                icon: 'success',
+              });
+              // 更新用户头像
+              this.userInfo.profilePicture = response.data.profilePicture;
+            } catch (e) {
+              console.error('解析响应失败:', e);
+              uni.showToast({
+                title: '解析响应失败',
+                icon: 'none',
+              });
+            }
+          } else {
+            console.error('上传头像失败:', res.statusCode);
+            uni.showToast({
+              title: '上传失败，请重试',
+              icon: 'none',
+            });
+          }
+        },
+        fail: (err) => {
+          console.error('请求失败:', err);
+          uni.showToast({
+            title: '请求失败，请重试',
+            icon: 'none',
+          });
+        }
+      });
+    },
+
+    // 编辑用户名
+    editUsername() {
+      this.isEditingUsername = true;
+      this.newUsername = this.userInfo.username; // 初始化输入框内容为当前用户名
+    },
+
+    // 保存修改后的用户名
+    saveUsername() {
+      const token = uni.getStorageSync('token'); // 获取 token
+      if (this.newUsername === this.userInfo.username) {
+        this.isEditingUsername = false; // 如果没有更改，退出编辑模式
+        return;
+      }
+
+      // 请求更新用户名
+      uni.request({
+        url: 'http://localhost:8080/api/user/updateInfo',
+        method: 'PUT',
+        header: {
+          'Content-Type': 'application/json',
+          'Authorization': `${token}`,
+        },
+        data: {
+          username: this.newUsername,
+        },
+        success: (res) => {
+          if (res.statusCode === 200) {
+            // 如果更新成功，更新本地用户名并退出编辑状态
+            this.userInfo.username = this.newUsername;
+            this.isEditingUsername = false;
+          } else {
+            console.error('更新用户名失败:', res.statusCode);
+            uni.showToast({
+              title: '更新失败，请重试',
+              icon: 'none',
+            });
+          }
+        },
+        fail: (err) => {
+          console.error('请求失败:', err);
+          uni.showToast({
+            title: '请求失败，请重试',
+            icon: 'none',
+          });
+        },
+      });
+    },
+
+    // 进入编辑简介模式
+    enterEditBio() {
+      this.isEditingBio = true;
+      this.newBio = this.userInfo.bio || ''; // 初始化简介为当前简介
+    },
+
+    // 保存修改后的简介
+    saveBio() {
+      const token = uni.getStorageSync('token'); // 获取 token
+      if (this.newBio === this.userInfo.bio) {
+        this.isEditingBio = false; // 如果没有更改，退出编辑模式
+        return;
+      }
+
+      // 请求更新简介
+      uni.request({
+        url: 'http://localhost:8080/api/user/updateInfo',
+        method: 'PUT',
+        header: {
+          'Content-Type': 'application/json',
+          'Authorization': `${token}`,
+        },
+        data: {
+          bio: this.newBio,
+        },
+        success: (res) => {
+          if (res.statusCode === 200) {
+            this.userInfo.bio = this.newBio; // 更新本地简介
+            this.isEditingBio = false; // 退出编辑状态
+          } else {
+            console.error('更新简介失败:', res.statusCode);
+            uni.showToast({
+              title: '更新失败，请重试',
+              icon: 'none',
+            });
+          }
+        },
+        fail: (err) => {
+          console.error('请求失败:', err);
+          uni.showToast({
+            title: '请求失败，请重试',
+            icon: 'none',
+          });
+        },
+      });
+    }
+  },
+
+  mounted() {
+    this.getUserInfo(); // 组件加载时获取用户信息
   }
 };
 </script>
 
+
 <style>
+/* 背景色全屏 */
 .container {
   display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: rgb(238, 225, 215);
+  padding-top: 20px;
+  width: 100%;
+}
+
+/* 用户信息框 */
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 20px;
+  background: rgb(255, 248, 244);
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 80%;
+  position: relative;
+  margin-left: 10%;
+  margin-top: 20px;
+}
+
+/* 头像样式 */
+.avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  position: absolute;
+  top: 15px;
+  left: 15px;
+}
+
+/* 用户信息右侧 */
+.user-details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* 将用户信息垂直对齐 */
+  margin-left: 70px; /* 适当调整右侧的间距，使头像与用户名之间有空隙 */
+  text-align: left; /* 确保文本左对齐 */
+}
+
+/* 用户名容器 */
+.username {
+  font-size: 13px;
+  color: #333;
+  font-weight: bold;
+  display: flex;            /* 使用户名和编辑按钮水平排列 */
+  align-items: center;      /* 垂直居中对齐 */
+  justify-content: flex-start; /* 在左侧对齐 */
+  width: 100%;              /* 确保它占满整行 */
+  margin-bottom: 5px;
+}
+
+/* 输入框样式 */
+.edit-input {
+  font-size: 14px;
+  padding: 5px;
+  width: 120px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  margin-left: 0px; /* 给输入框添加左边距，使其与原用户名有间隔 */
+}
+
+/* 用户角色样式 */
+.role {
+  font-size: 10px;
+  color: #333;
+  padding: 3px 30px;
+  border: 2px solid rgb(207, 150, 144);
+  border-radius: 5px;
+  margin-top: 5px;
+  background: rgb(255, 207, 202);
+  box-sizing: border-box;
+  text-align: center;
+}
+
+/* 用户简介容器样式 */
+.bio-container {
+  margin-top: 10px;
+  width: 100%; /* 占满整个宽度 */
+}
+
+/* 用户简介文本样式 */
+.bio {
+  font-size: 10px; /* 更小的字体 */
+  color: #666;
+  text-align: left; /* 改为左对齐 */
+  padding: 0px;
+  line-height: 1; /* 增加行高，使文本不拥挤 */
+}
+
+/* 白色方块样式 */
+.white-box {
+  background-color: #fff;
+  width: 100%;
+  height: 60px; /* 高度可以根据需要调整 */
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-top: 5px; /* 上方留空 */
+  display: flex;
   justify-content: center;
+  align-items: center; /* 居中显示简介 */
+}
+
+/* 简介输入框 */
+.bio-input {
+  width: 100%;
+  height: 70px;
+  border: none;
+  border-radius: 5px;
+  padding: 10px;
+  font-size: 14px;
+  background-color: rgb(245, 245, 245);
+  resize: none;
+  box-sizing: border-box;
+  outline: none;
+}
+
+/* 按钮容器 */
+.button-container {
+  display: flex;
+  flex-direction: column;
+  width: 80%;
+  margin-top: 20px;
+  margin-left: 10%;
+  padding-bottom: 20px;
+}
+
+/* 单个按钮样式 */
+.action-button {
+  background: rgb(255, 250, 242);
+  border: none;
+  height: 40px;
+  padding: 5px 20px;
+  border-radius: 15px;
+  color: #333;
+  font-size: 14px;
+  cursor: pointer;
+  margin-bottom: 5px;
+  width: 100%;
+  display: flex;
+  align-items: center; /* 垂直居中对齐文本和图标 */
+  justify-content: space-between; /* 使按钮文本和图标有间隔 */
   align-items: center;
-  height: 100%;
+  transition: background 0.1s ease;
 }
-.text {
-  font-size: 50px;
-  color: #bf7977;
+
+/* 按钮被点击时的效果 */
+.action-button:active {
+  background: rgb(210, 190, 180); /* 点击时按钮颜色变化 */
 }
+
+/* 按钮恢复到默认颜色 */
+.action-button:not(:active) {
+  transition: background 0.1s ease; /* 按钮恢复颜色的过渡效果 */
+}
+/* 如果希望文本更居中 */
+.action-button text {
+  margin-left: 10px; /* 为文本添加适当的左边距 */
+  margin-right: 10px; /* 为文本添加适当的右边距 */
+  text-align: center; /* 确保文本居中 */
+}
+
+/* 图标样式 */
+.button-icon {
+  width: 20px;
+  height: 20px;
+  margin-left: 5px; /* 图标和文字之间的间距 */
+}
+
 </style>
