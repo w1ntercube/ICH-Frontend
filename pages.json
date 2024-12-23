@@ -87,6 +87,13 @@
 		{
 			"navigationBarTitleText" : ""
 		}
+	},
+	{
+		"path" : "pages/shop/SalePage/SalePage",
+		"style" : 
+		{
+			"navigationBarStyle": "custom"
+		}
 	}
   ],
   "tabBar": {
