@@ -1,0 +1,278 @@
+<template>
+  <view class="container">
+    <!-- 活动图片 -->
+    <image
+      class="event-image"
+      :src="eventDetails.imageUrl || '/static/images/default-event.png'"
+    ></image>
+
+    <!-- 活动标题 -->
+    <view class="event-header">
+      <text class="event-title">{{ eventDetails.title || '活动标题未提供' }}</text>
+      <text class="event-date">
+        {{ formatTime(eventDetails.startTime) }} - {{ formatTime(eventDetails.endTime) }}
+      </text>
+    </view>
+
+	<!-- 活动发起者 -->
+    <view class="event-organizer">
+  	  <text class="section-title">发起者</text>
+	  <view class="organizer-info">
+	    <image
+		  class="organizer-avatar"
+		  :src="eventDetails.user?.profilePicture || '/static/images/default-avatar.png'"
+	    />
+	    <text class="organizer-username">
+		  {{ eventDetails.user?.username || '未知用户' }}
+	    </text>
+	  </view>
+    </view>
+    <!-- 活动描述 -->
+    <view class="event-description">
+      <text class="section-title">活动描述</text>
+      <text class="description-text">
+        {{ eventDetails.description || '暂无描述' }}
+      </text>
+    </view>
+
+    <!-- 活动地点 -->
+	<view class="event-location">
+	  <text class="section-title">活动地点</text>
+	  <text class="location-text">
+	    <!-- 判断省份和城市是否相同 -->
+	    {{
+		  eventDetails.province === eventDetails.city
+		    ? eventDetails.city
+		    : eventDetails.province + " " + eventDetails.city
+	    }}
+	    {{ eventDetails.district || '未知地区' }}
+	    {{ eventDetails.location || '未知地点' }}
+	  </text>
+	</view>
+	<view class="event-status">
+		<text class="section-title">活动状态</text>
+		<text class="status-text" :class="getStatusClass(eventDetails.status)">
+		  {{ formatStatus(eventDetails.status) }}
+		</text>
+	</view>
+  </view>
+</template>
+	
+<script>
+export default {
+  data() {
+    return {
+      eventId: null, // 活动 ID
+      eventDetails: {}, // 活动详情
+    };
+  },
+  onLoad(options) {
+    // 从 URL 参数中获取 eventId
+    this.eventId = options.eventId || null;
+    console.log("活动 ID:", this.eventId);
+
+    // 获取活动详情
+    if (this.eventId) {
+      this.fetchEventDetails(this.eventId);
+    }
+  },
+  methods: {
+    async fetchEventDetails(eventId) {
+      try {
+        // 调用后端 API 获取活动详情
+        const response = await fetch(`http://localhost:8080/api/events/${eventId}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+
+        // 将后端返回的数据直接赋值到 eventDetails 中
+        this.eventDetails = data.data || {};
+        console.log("活动详情数据:", this.eventDetails);
+      } catch (error) {
+        console.error("获取活动详情失败:", error);
+        uni.showToast({
+          title: error.message.includes("500")
+            ? "服务器内部错误，请稍后重试"
+            : "获取活动详情失败",
+          icon: "none",
+          duration: 2000,
+        });
+      }
+    },
+    goBack() {
+      // 返回上一页
+      uni.navigateBack();
+    },
+    formatTime(datetime) {
+      if (!datetime) return "未知时间";
+      const date = new Date(datetime);
+      return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}-${date
+        .getDate()
+        .toString()
+        .padStart(2, "0")} ${date
+        .getHours()
+        .toString()
+        .padStart(2, "0")}:${date
+        .getMinutes()
+        .toString()
+        .padStart(2, "0")}`;
+    },
+    formatStatus(status) {
+      switch (status) {
+        case "DRAFT":
+          return "未开始";
+        case "PUBLISHED":
+          return "进行中";
+        case "CANCELLED":
+          return "已取消";
+        default:
+          return "未知状态";
+      }
+    },
+    getStatusClass(status) {
+      switch (status) {
+        case "DRAFT":
+          return "status-draft"; // 未开始 - 黄色
+        case "PUBLISHED":
+          return "status-published"; // 进行中 - 绿色
+        case "CANCELLED":
+          return "status-cancelled"; // 已取消 - 红色
+        default:
+          return "status-unknown"; // 未知状态 - 默认样式
+      }
+    },
+  },
+};
+</script>
+
+<style>
+/* 全局容器 */
+.container {
+  padding: 16px;
+  background-color: #ffffff;
+}
+
+/* 活动图片 */
+.event-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover; /* 确保图片不会变形 */
+  border-radius: 8px;
+  margin-bottom: 16px;
+  background-color: #f0f0f0; /* 默认背景色，防止图片加载时页面空白 */
+}
+
+/* 活动标题部分 */
+.event-header {
+  margin-bottom: 16px;
+}
+
+.event-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333333;
+  margin-bottom: 8px;
+}
+
+.event-date {
+  font-size: 14px;
+  color: #999999;
+}
+
+.event-organizer {
+  margin-bottom: 16px;
+}
+
+.organizer-info {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.organizer-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 12px;
+  object-fit: cover;
+  background-color: #f0f0f0;
+}
+
+.organizer-username {
+  font-size: 16px;
+  color: #333333;
+  font-weight: bold;
+}
+/* 活动描述部分 */
+.event-description {
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333333;
+  margin-bottom: 8px;
+}
+
+.description-text {
+  font-size: 14px;
+  color: #666666;
+  line-height: 1.6;
+}
+
+/* 活动地点部分 */
+.event-location {
+  margin-bottom: 16px;
+}
+
+.location-text {
+  font-size: 14px;
+  color: #666666;
+  line-height: 1.6;
+}
+
+.status-text {
+  font-size: 14px;
+  line-height: 1.6;
+  font-weight: bold;
+}
+
+.status-draft {
+  color: #f0ad4e;
+}
+
+.status-published {
+  color: #5cb85c;
+}
+
+.status-cancelled {
+  color: #d9534f;
+}
+
+/* 未知状态 - 灰色 */
+.status-unknown {
+  color: #999999;
+}
+
+/* 媒体查询，适配不同屏幕 */
+@media (min-width: 768px) {
+  .container {
+    padding: 32px;
+  }
+
+  .event-title {
+    font-size: 28px;
+  }
+
+  .event-date {
+    font-size: 16px;
+  }
+
+  .description-text,
+  .location-text {
+    font-size: 16px;
+  }
+}
+</style>

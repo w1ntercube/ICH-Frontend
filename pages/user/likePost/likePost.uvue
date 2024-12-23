@@ -1,0 +1,201 @@
+<template>
+  <div class="container">
+    <!-- 帖子列表 -->
+    <div class="post-list">
+      <div
+        v-for="post in filteredPosts"
+        :key="post.postId"
+        class="post-card"
+        @click="goToPostDetail(post.postId)"
+      >
+        <!-- 检查 imageUrl 是否为空 -->
+        <img :src="post.imageUrl || '/static/images/default.jpg'" alt="帖子图片" class="post-image" />
+        <div class="post-info">
+          <div class="user-info">
+            <span class="user-name">{{ post.userName || '匿名用户' }}</span>
+          </div>
+          <h3 class="post-title">{{ post.title }}</h3>
+          <div class="post-stats">
+            <span class="stat-item">
+              <img src="/static/images/like.png" class="icon" /> {{ post.likesCount }}
+            </span>
+            <span class="stat-item">
+              <img src="/static/images/comment.png" class="icon" /> {{ post.commentsCount }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      searchQuery: "", // 搜索关键字
+      posts: [], // 原始帖子数据
+      filteredPosts: [], // 筛选后的帖子数据
+    };
+  },
+  methods: {
+    // 从后端获取帖子数据
+    async fetchPosts() {
+      try {
+        const token = uni.getStorageSync('token');
+        
+        const response = await fetch("http://localhost:8080/api/getUserPosts/like", {
+          method: 'POST', // 或者其他请求方法，如 POST、PUT 等
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `${token}` // 将 token 添加到请求头中
+          }
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          const data = result.data; // 获取接口返回的 `data` 部分
+          console.log('获取到的数据:', data);
+          this.posts = data;
+          this.filteredPosts = data;
+        } else {
+          console.error('请求失败，状态码:', response.status);
+        }
+      } catch (error) {
+        console.error("获取帖子失败:", error);
+      }
+    },
+    // 跳转到帖子详情
+    goToPostDetail(postId) {
+      uni.navigateTo({
+        url: `/pages/posts/postDetail/postDetail?postId=${postId}`,
+      });
+    },
+  },
+  // 组件挂载时调用数据获取方法
+  mounted() {
+    this.fetchPosts();
+  },
+};
+</script>
+
+<style>
+.container {
+  padding: 20px;
+  background-color: #f5f5f5;
+  font-family: Arial, sans-serif;
+}
+
+.search-bar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 90%;
+  height: 40px;
+  margin: 10px 0;
+  padding: 0 10px;
+  background-color: #fff;
+  border-radius: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.search-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+}
+
+.search-icon .icon {
+  width: 20px;
+  height: 20px;
+}
+
+.search-input {
+  flex: 1;
+  height: 100%;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: #333;
+}
+
+.post-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.post-card {
+  display: flex;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.post-image {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+}
+
+.post-info {
+  flex: 1;
+  padding: 10px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.user-name {
+  font-weight: bold; /* 保持加粗 */
+  font-size: 14px; /* 设置比标题小的字体大小 */
+  color: #555; /* 深灰色 */
+}
+
+
+.post-title {
+  font-size: 15px;
+  margin: 13px 0;
+}
+
+.post-stats {
+  display: flex; /* 使用 flex 布局 */
+  gap: 15px; /* 图标和文字之间的间距 */
+  align-items: center; /* 垂直居中对齐 */
+  font-size: 14px; /* 字体大小 */
+  color: #555; /* 文本颜色 */
+}
+
+.stat-item {
+  display: flex; /* 子元素也使用 flex 布局 */
+  align-items: center; /* 图片和文字垂直居中 */
+  gap: 5px; /* 图片和文字之间的间距 */
+}
+
+.icon {
+  width: 20px; /* 设置图片宽度 */
+  height: 20px; /* 设置图片高度，保证一致 */
+  vertical-align: middle; /* 图片和文字在基线上对齐 */
+}
+.create-post {
+  display: flex;
+  justify-content: center; /* 居中对齐 */
+  margin: 15px 0; /* 添加上下边距 */
+}
+.create-button {
+  display: flex;
+  align-items: center; /* 图标和文字垂直居中 */
+  padding: 10px 20px; /* 内边距 */
+  color: black; /* 按钮文字颜色 */
+  border: none; /* 去掉边框 */
+  border-radius: 20px; /* 圆角边框 */
+  font-size: 12px; /* 文字大小 */
+  cursor: pointer; /* 鼠标样式 */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* 阴影效果 */
+}
+</style>
