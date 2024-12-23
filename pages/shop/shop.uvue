@@ -1,26 +1,283 @@
 <template>
-  <view class="container">
-    <text class="text">页面：5</text>
+  <view class="shop-container">
+    <view class="content">
+      <!-- 分类列表 -->
+      <scroll-view class="type-list" scroll-x :direction="'horizontal'" 
+  :scroll-with-animation="true"
+  :show-scrollbar="true">
+        <view 
+          v-for="(item, index) in types" 
+          :key="item.typeId" 
+          :class="['type-item', currentType === item.typeId ? 'active' : '']"
+          @click="switchType(item)"
+        >
+          <text>{{ item.typeName }}</text>
+        </view>
+      </scroll-view>
+    </view>
+	
+	<!-- 商品列表 -->
+	<scroll-view 
+	  class="product-list" 
+	  scroll-y 
+	  @scrolltolower="loadMoreProducts"
+	>
+	  <view 
+	    v-for="product in products" 
+	    :key="product.productId" 
+	    class="product-card"
+	  >
+	    <image 
+	      :src="product.imageURL || '/static/images/商品图1.png'" 
+	      class="product-image" 
+	      mode="aspectFill"
+	    />
+	    <view class="product-info">
+	      <text class="product-title">{{ product.title }}</text>
+	      <text class="product-price">￥{{ product.price.toFixed(2) }}</text>
+	      <button 
+	        class="detail-btn" 
+	        @click="goToDetail(product.productId)"
+	      >查看详情</button>
+	    </view>
+	  </view>
+	  
+	  <!-- 加载更多提示 -->
+	  <view v-if="loading" class="loading">
+	    加载中...
+	  </view>
+	</scroll-view>
   </view>
 </template>
 
 <script>
+import { toRaw } from 'vue';
 export default {
   data() {
-    return {};
+    return {
+      currentType: 1, // 默认选中第一个分类
+      currentTypeName: '', // 当前选中的分类名称
+      types: [], // 商品分类
+      products: [], // 商品列表
+      lastId: 0, // 最后一个商品的ID
+      loading: false, // 是否正在加载
+      limit: 5 // 每次加载的商品数量
+    }
+  },
+  
+  onLoad() {
+    this.getCategories()
+  },
+  
+  methods: {
+    // 获取商品分类
+    async getCategories() {
+      try {
+        const response = await fetch("http://localhost:8080/api/products/types")
+        const result = await response.json()
+        this.types = result.data
+        console.log("获取分类成功:", result)
+        // 默认选中第一个分类并加载商品
+        if (this.types.length > 0) {
+          this.currentTypeName = this.types[0].typeName
+		  console.log(this.currentType)
+          this.getProducts()
+        }
+      } catch (error) {
+        console.error("获取分类失败:", error)
+        uni.showToast({
+          title: '获取分类失败',
+          icon: 'none'
+        })
+      }
+    },
+    
+    // 切换分类
+    async switchType(type) {
+      this.currentType = type.typeId
+      this.currentTypeName = type.typeName
+      this.lastId = 0 // 重置lastId
+      this.products = [] // 清空商品列表
+      await this.getProducts()
+    },
+    
+    // 获取商品列表
+    async getProducts() {
+      if (this.loading) return
+      this.loading = true
+      try {
+        const params = {
+          typeName: this.currentTypeName,
+          lastId: this.lastId,
+          limit: this.limit
+        }
+        
+        const response = await fetch("http://localhost:8080/api/products/list", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(params)
+        })
+        
+        let result = await response.json()
+        
+		result=toRaw(result)
+		console.log("获取商品成功:", result)
+        if (result.data && result.data.productList) {
+          if (this.lastId === 0) {
+            // 首次加载或切换分类
+            this.products = result.data.productList
+          } else {
+            // 加载更多
+            this.products = [...this.products, ...result.data.productList]
+          }
+          
+          // 更新lastId
+          if (result.data.productList.length > 0) {
+            this.lastId = result.data.productList[result.data.productList.length - 1].productId
+          }
+        }
+		this.products=toRaw(this.products)
+		console.log(this.products)
+      } catch (error) {
+        console.error("获取商品列表失败:", error)
+        uni.showToast({
+          title: '获取商品列表失败',
+          icon: 'none'
+        })
+      } finally {
+        this.loading = false
+      }
+    },
+    
+    // 加载更多商品
+    loadMoreProducts() {
+      this.getProducts()
+	  console.log("已加载更多商品")
+    },
+    
+    // 跳转到商品详情页
+    goToDetail(productId) {
+		console.log("ID:",productId)
+		uni.navigateTo({ 
+			url: `/pages/shop/ProductDetail/ProductDetail?productId=${productId}`
+       })
+    },
+	goToPage(page) {
+	  uni.navigateTo({
+	    url: `/pages/${page}/${page}`
+	  });
+	}
   }
-};
+}
 </script>
 
 <style>
-.container {
+.shop-container {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #f5f5f5;
 }
-.text {
-  font-size: 50px;
-  color: #bf7977;
+
+.content {
+	display: flex; /* 使用flex布局进行横向排列 */
+    padding: 20rpx;
+    flex-wrap: nowrap; /* 防止子元素换行 */
 }
+
+.type-list {
+  display: flex;
+  flex-direction: row; /* 横向排列 */
+  height: 40px; /* 设置分类列表的高度 */
+  background-color: #fff;
+  border-bottom: 1rpx solid #eee;
+}
+
+.type-item {
+	display: inline-block;
+    padding: 10rpx 30rpx;
+    margin: 0 15rpx;
+    font-size: 28rpx;
+    color: #666;
+    border-radius: 30rpx;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+.type-item:last-child {
+  border-right: none; /* 最后一个标签不需要右边框 */
+}
+
+.type-item.active {
+  background-color: #f0f0f0;
+  color: #007AFF;
+}
+
+.product-list {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center; /* 在横向上居中 */
+  padding: 20rpx;
+  gap: 20rpx; /* 设置商品之间的间隙 */
+  background-color: #fff;
+}
+
+
+.product-card {
+  width: 90%; /* 每个商品占50%的宽度，减去一些间隙 */
+  background-color: #fff;
+  border-radius: 10rpx;
+  margin-bottom: 20rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+}
+
+.product-image {
+  width: 100%;
+  height: 250rpx; /* 调整图片高度以适应两列布局 */
+}
+
+.product-info {
+  padding: 10rpx 20rpx;
+}
+
+.product-title {
+  font-size: 26rpx;
+  color: #333;
+  margin-bottom: 5rpx;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.product-price {
+  font-size: 28rpx;
+  color: #ff4400;
+  font-weight: bold;
+  margin-bottom: 15rpx;
+}
+
+
+.detail-btn {
+  background-color: #fa7582;
+  color: #fff;
+  font-size: 26rpx;
+  padding: 10rpx 30rpx;
+  border-radius: 30rpx;
+  border: none;
+}
+
+.loading {
+  text-align: center;
+  padding: 20rpx;
+  color: #999;
+  font-size: 24rpx;
+}
+
+
 </style>

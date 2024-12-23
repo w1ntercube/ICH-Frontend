@@ -67,6 +67,13 @@
 		"style": {
 			"navigationBarTitleText": "新建评论"
 		}
+	},
+	{
+		"path" : "pages/shop/ProductDetail/ProductDetail",
+		"style" : 
+		{
+			"navigationBarTitleText" : ""
+		}
 	}
   ],
   "tabBar": {
