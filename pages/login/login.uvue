@@ -49,6 +49,8 @@ export default {
   },
   methods: {
     login() {
+		const token = uni.getStorageSync('token'); // 从本地存储获取 token
+		console.error(token);
       // 验证输入
       if (this.userString === '' || this.password === '') {
         this.errorMessage = '手机号和密码不能为空';

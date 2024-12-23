@@ -94,6 +94,55 @@
 		{
 			"navigationBarTitleText" : "活动详情"
 		}
+	},
+	{
+		"path" : "pages/user/likePost/likePost",
+		"style" : 
+		{
+			"navigationBarTitleText" : ""
+		}
+	},
+	{
+		"path" : "pages/user/publishProduct/publishProduct",
+		"style" : 
+		{
+			"navigationBarTitleText" : ""
+		}
+	},
+	{
+		"path" : "pages/user/favouritePost/favouritePost",
+		"style" : 
+		{
+			"navigationBarTitleText" : ""
+		}
+	},
+	{
+		"path" : "pages/user/publishPost/publishPost",
+		"style" : 
+		{
+			"navigationBarTitleText" : ""
+		}
+	},
+	{
+		"path" : "pages/user/deleteEvent/deleteEvent",
+		"style" : 
+		{
+			"navigationBarTitleText" : ""
+		}
+	},
+	{
+		"path" : "pages/user/changeEvent/changeEvent",
+		"style" : 
+		{
+			"navigationBarTitleText" : ""
+		}
+	},
+	{
+		"path" : "pages/user/publishEvent/publishEvent",
+		"style" : 
+		{
+			"navigationBarTitleText" : ""
+		}
 	}
   ],
   "tabBar": {

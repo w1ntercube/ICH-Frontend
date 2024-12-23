@@ -38,13 +38,13 @@
       </view>
     </view>
 
-    <!-- 下方的按钮 -->
     <view class="button-container">
-          <button class="action-button" v-for="(button, index) in buttons" :key="index">
-            <text>{{ button }}</text>
-			 <image src="/static/images/详情.png" alt="详情图标" class="button-icon" />
-          </button>
-        </view>
+      <button class="action-button" v-for="(button, index) in buttons" :key="index" @click="goToPage(button)">
+        <text>{{ button.name }}</text>  <!-- 确保这里是 button.name -->
+        <image src="/static/images/详情.png" alt="详情图标" class="button-icon" />
+      </button>
+    </view>
+
   </view>
 </template>
 
@@ -63,18 +63,30 @@ export default {
       isEditingBio: false, // 是否在编辑简介
       newUsername: '', // 存储修改后的用户名
       newBio: '', // 存储修改后的简介
-      buttons: ['按钮1', '按钮2', '按钮3', '按钮4', '按钮5'],
+      allButtons: [
+              { name: '我点赞的帖子', page: '/pages/user/likePost/likePost' },
+              { name: '我收藏的帖子', page: '/pages/user/favouritePost/favouritePost' },
+              { name: '我发布的帖子', page: '/pages/user/publishPost/publishPost' },
+              { name: '发布商品', page: '/pages/user/publishProduct/publishProduct' },
+              { name: '发布活动', page: '/pages/user/publishEvent/publishEvent' },
+              { name: '修改活动', page: '/pages/user/changeEvent/changeEvent' },
+              { name: '删除活动', page: '/pages/user/deleteEvent/deleteEvent' }
+            ], // 所有按钮及其页面
+      buttons: [], // 当前显示的按钮
     };
   },
   computed: {
-    // 根据 role 显示不同的角色文本
+    // 根据 role 显示不同的按钮数量
     displayRole() {
       if (this.userInfo.role === 'ADMIN') {
+        this.buttons = this.allButtons; // 显示所有按钮
         return '管理员';
       } else if (this.userInfo.role === 'APPRAISER') {
-        return '非遗品鉴官';
-      } else {
+        this.buttons = this.allButtons; // 显示所有按钮
         return '非遗传承人';
+      } else {
+        this.buttons = this.allButtons.slice(0, 3); // 只显示前3个按钮
+        return '非遗品鉴官';
       }
     }
   },
@@ -101,7 +113,7 @@ export default {
         },
       });
     },
-
+  
     // 上传头像
     uploadAvatar() {
       uni.chooseImage({
@@ -161,13 +173,13 @@ export default {
         }
       });
     },
-
+  
     // 编辑用户名
     editUsername() {
       this.isEditingUsername = true;
       this.newUsername = this.userInfo.username; // 初始化输入框内容为当前用户名
     },
-
+  
     // 保存修改后的用户名
     saveUsername() {
       const token = uni.getStorageSync('token'); // 获取 token
@@ -175,7 +187,7 @@ export default {
         this.isEditingUsername = false; // 如果没有更改，退出编辑模式
         return;
       }
-
+  
       // 请求更新用户名
       uni.request({
         url: 'http://localhost:8080/api/user/updateInfo',
@@ -209,13 +221,13 @@ export default {
         },
       });
     },
-
+  
     // 进入编辑简介模式
     enterEditBio() {
       this.isEditingBio = true;
       this.newBio = this.userInfo.bio || ''; // 初始化简介为当前简介
     },
-
+  
     // 保存修改后的简介
     saveBio() {
       const token = uni.getStorageSync('token'); // 获取 token
@@ -223,7 +235,7 @@ export default {
         this.isEditingBio = false; // 如果没有更改，退出编辑模式
         return;
       }
-
+  
       // 请求更新简介
       uni.request({
         url: 'http://localhost:8080/api/user/updateInfo',
@@ -254,6 +266,13 @@ export default {
             icon: 'none',
           });
         },
+      });
+    },
+  
+    // 跳转到指定页面
+    goToPage(button) {
+      uni.navigateTo({
+        url: button.page,
       });
     }
   },
@@ -288,7 +307,7 @@ export default {
   width: 80%;
   position: relative;
   margin-left: 10%;
-  margin-top: 20px;
+  margin-top: 0px;
 }
 
 /* 头像样式 */
@@ -395,7 +414,7 @@ export default {
   width: 80%;
   margin-top: 20px;
   margin-left: 10%;
-  padding-bottom: 20px;
+  padding-bottom: 15px;
 }
 
 /* 单个按钮样式 */
@@ -408,7 +427,7 @@ export default {
   color: #333;
   font-size: 14px;
   cursor: pointer;
-  margin-bottom: 5px;
+  margin-bottom: 3px;
   width: 100%;
   display: flex;
   align-items: center; /* 垂直居中对齐文本和图标 */
