@@ -1,26 +1,337 @@
 <template>
   <view class="container">
-    <text class="text">页面：4</text>
+    <!-- 定位区域 -->
+    <view class="location-bar">
+      <image class="location-icon" src="/static/images/events.png"></image>
+      <text class="location-text">{{ location }}</text>
+    </view>
+	
+    <!-- 大标题和分隔线 -->
+    <view class="section-header">
+      <text class="title-text">附近的活动</text>
+		  <!-- 搜索栏 -->
+		  <view class="search-bar">
+			<view class="search-icon">
+			  <image src="/static/images/search-icon.png" class="icon"></image>
+			</view>
+			<input
+			  class="search-input"
+			  placeholder="搜索活动内容、举办地..."
+			  confirm-type="search"
+			  @confirm="onSearch"
+			/>
+		  </view>
+
+      <view class="divider"></view>
+    </view>
+	
+	
+    <!-- 活动列表 -->
+    <view class="event-list">	
+		<view 
+		  v-for="event in events" 
+		  :key="event.eventId" 
+		  class="event-item" 
+		  @click="goToEventDetail(event.eventId)"
+		>
+        <image class="event-image" :src="event.imageUrl || '/static/images/default-event.png'"></image>
+        <view class="event-info">
+          <text class="event-title">{{ event.title }}</text>
+          <text class="event-location">{{ event.city + " "+  event.district}}</text>
+        </view>
+      </view>
+    </view>
   </view>
 </template>
 
 <script>
 export default {
   data() {
-    return {};
-  }
+    return {
+      location: "正在获取位置信息...", // 初始显示的提示文字
+      events: [], // 活动列表
+	  currentProvince:"",
+	  currentCity:"",
+    };
+  },
+  mounted() {
+    this.fetchLocationAndEvents();
+  },
+  methods: {
+    async fetchLocationAndEvents() {
+      try {
+        // 获取用户当前位置
+        const position = await new Promise((resolve, reject) => {
+          uni.getLocation({
+            type: "wgs84",
+            success: (res) => resolve(res),
+            fail: (err) => {
+              console.warn("定位失败，使用默认位置:", err);
+              resolve({ latitude: 31.364384, longitude: 121.266229 }); // 默认上海
+            },
+          });
+        });
+
+        const { latitude, longitude } = position;
+        console.log("获取到的经纬度：", latitude, longitude);
+
+        // 调用后端 API 获取省市区信息
+        const locationResponse = await new Promise((resolve, reject) => {
+          uni.request({
+            url: `http://localhost:8080/api/location/reverse-geocode`,
+            method: "GET",
+            data: { latitude, longitude },
+            success: (res) => resolve(res),
+            fail: (err) => reject(err),
+          });
+        });
+
+        if (locationResponse && locationResponse.statusCode === 200) {
+          const { province, city, district } = locationResponse.data;
+
+          // 更新省市区信息到界面
+		  this.currentProvince = province;
+		  this.currentCity = city;
+          this.location = `${province} ${city} ${district}`;
+          console.log("获取到的省市区信息:", this.location);
+
+          // 根据省市获取活动列表
+          await this.fetchEventsByLocation(province, city);
+        } else {
+          throw new Error("后端接口返回错误");
+        }
+      } catch (error) {
+        console.error("获取位置或请求后端接口失败:", error);
+        this.location = "无法获取位置信息";
+      }
+    },
+	
+    async fetchEventsByLocation(province, city) {
+      try {
+        const response = await new Promise((resolve, reject) => {
+          uni.request({
+            url: `http://localhost:8080/api/events/getByLocation`,
+            method: "GET",
+            data: { province, city },
+            success: (res) => resolve(res),
+            fail: (err) => reject(err),
+          });
+        });
+
+        if (response && response.statusCode === 200) {
+          this.events = response.data.data || [];
+          console.log("获取到的活动列表:", this.events);
+        } else {
+          throw new Error("获取活动列表失败");
+        }
+      } catch (error) {
+        console.error("获取活动列表失败:", error);
+        this.events = [];
+      }
+	  
+    },
+	goToEventDetail(eventId) {
+		console.log(eventId);
+	  uni.navigateTo({
+		url: `/pages/events/eventDetail/eventDetail?eventId=${eventId}`,
+	  });
+	},
+	
+    // 搜索功能
+    async onSearch(e) {
+      const query = e.detail.value.trim();
+      console.log("搜索内容：", query);
+
+      if (!query) {
+        uni.showToast({
+          title: "请输入搜索内容",
+          icon: "none",
+          duration: 2000,
+        });
+		try {
+		  // 假设当前省市信息存储在 data 中
+		  const province = this.currentProvince;
+		  const city = this.currentCity;
+		  
+		  // 重新加载附近活动
+		  await this.fetchEventsByLocation(province,city);
+		} catch (error) {
+		  console.error("重新加载活动失败:", error);
+		  uni.showToast({
+			title: "重新加载活动失败，请稍后重试",
+			icon: "none",
+			duration: 2000,
+		  });
+		}
+		return;
+      }
+
+      try {
+        // 调用后端搜索接口
+        const response = await new Promise((resolve, reject) => {
+          uni.request({
+            url: `http://localhost:8080/api/events/search`,
+            method: "GET",
+            data: { query },
+            success: (res) => resolve(res),
+            fail: (err) => reject(err),
+          });
+        });
+
+        if (response && response.statusCode === 200) {
+          this.events = response.data.data || [];
+          console.log("搜索结果：", this.events);
+        } else {
+          throw new Error("搜索接口返回错误");
+        }
+      } catch (error) {
+        console.error("搜索失败:", error);
+        uni.showToast({
+          title: "搜索失败，请稍后重试",
+          icon: "none",
+          duration: 2000,
+        });
+      }
+    },	
+		
+    formatTime(datetime) {
+      const date = new Date(datetime);
+      return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}-${date
+        .getDate()
+        .toString()
+        .padStart(2, "0")} ${date
+        .getHours()
+        .toString()
+        .padStart(2, "0")}:${date
+        .getMinutes()
+        .toString()
+        .padStart(2, "0")}`;
+    },
+  },
 };
 </script>
 
-<style>
+<style scoped>
 .container {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  padding: 10px;
+}
+
+.location-bar {
+  display: flex;
   align-items: center;
+  padding: 10px;
+  background-color: #fffaf2;
+  border-radius: 8px;
+}
+
+.location-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 10px;
+}
+
+.location-text {
+  font-size: 16px;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.section-header {
+  margin-top: 20px; /* 与上方内容的间距 */
+}
+
+.title-text {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8px;
+  margin-left: 15px;
+}
+
+.divider {
+  height: 3px;
+  margin: 0 auto;
+  background-color: #934e3d;
+  width: 90%;
+}
+
+.event-list {
+  margin-top: 20px;
+}
+
+.event-item {
+  display: flex;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.event-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  margin-right: 10px;
+  object-fit: cover;
+}
+
+.event-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.event-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+.event-location {
+  font-size: 14px;
+  color: #666;
+  margin: 5px 0;
+}
+
+/* 搜索栏样式 */
+.search-bar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 90%;
+  height: 40px;
+  margin: 10px 0;
+  padding: 0 10px;
+  background-color: #fff;
+  border-radius: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 阴影效果 */
+}
+
+.search-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+}
+
+.search-icon .icon {
+  width: 20px;
+  height: 20px;
+}
+
+.search-input {
+  flex: 1;
   height: 100%;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: #333;
 }
-.text {
-  font-size: 50px;
-  color: #bf7977;
-}
+
 </style>

@@ -67,6 +67,13 @@
 		"style": {
 			"navigationBarTitleText": "新建评论"
 		}
+	},
+	{
+		"path" : "pages/events/eventDetail/eventDetail",
+		"style" : 
+		{
+			"navigationBarTitleText" : "活动详情"
+		}
 	}
   ],
   "tabBar": {
