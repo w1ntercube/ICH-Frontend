@@ -70,7 +70,7 @@ export default {
         formData.append("title", this.title);
         formData.append("content", this.content);
 
-        const token = localStorage.getItem("token"); // 从 localStorage 获取 token
+        const token = uni.getStorageSync('token');
         if (!token) {
           alert("用户未登录，请先登录");
           return;
@@ -79,7 +79,7 @@ export default {
         const response = await fetch("http://localhost:8080/api/post/createPost", {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `${token}`,
           },
           body: formData,
         });
@@ -152,6 +152,7 @@ textarea {
 
 .upload-button {
   display: inline-block;
+  align-items: center;
   padding: 10px 15px;
   background-color: lightgray;
   color: #fff;

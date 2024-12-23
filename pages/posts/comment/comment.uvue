@@ -48,9 +48,9 @@ export default {
       }
     },
 	goToAddCommentPage() {
-      uni.navigateTo({
-        url: "/pages/posts/comment/createComment"
-      });
+	uni.navigateTo({
+	  url: `/pages/posts/comment/createComment?postId=${this.postId}`, // 确保拼接正确
+	});
 	},
   },
 
