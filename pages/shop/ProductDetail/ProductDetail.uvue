@@ -57,15 +57,25 @@ export default {
 		}
 	},
     goToBuy() {
+		// if (this.product.salesURL) {
+		// 	console.log("链接", this.product.salesURL);
+		// 	// 在 H5 环境下，直接跳转到外部链接
+		// 	window.location.href = this.product.salesURL;
+		//   } else {
+		// 	uni.showToast({
+		// 	  title: "暂无购买链接",
+		// 	  icon: "none"
+		// 	});
+		//   }
 		if (this.product.salesURL) {
-			console.log("链接", this.product.salesURL);
-			// 在 H5 环境下，直接跳转到外部链接
-			window.location.href = this.product.salesURL;
+		    uni.navigateTo({
+		      url: `/pages/shop/SalePage/SalePage?url=${encodeURIComponent(this.product.salesURL)}`
+		    });
 		  } else {
-			uni.showToast({
-			  title: "暂无购买链接",
-			  icon: "none"
-			});
+		    uni.showToast({
+		      title: "暂无购买链接",
+		      icon: "none"
+		    });
 		  }
     }
   }
