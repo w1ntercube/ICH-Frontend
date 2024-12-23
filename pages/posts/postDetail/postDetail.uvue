@@ -154,14 +154,14 @@ export default {
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
-  margin-top: -45px;
+  margin-top: 15px;
   display: block;
 }
 
 .post-text {
   font-size: 14px;
   color: #333;
-  margin-top: -40px;
+  margin-top: 15px;
 }
 
 .icon {
