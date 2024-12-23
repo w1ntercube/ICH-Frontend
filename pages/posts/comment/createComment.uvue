@@ -1,0 +1,146 @@
+<template>
+  <div class="create-comment-container">
+    <h2>发表评论</h2>
+
+    <!-- 评论内容 -->
+    <div class="form-group">
+      <label for="content">评论内容</label>
+      <textarea
+        id="content"
+        v-model="content"
+        placeholder="请输入评论内容"
+      ></textarea>
+    </div>
+
+    <!-- 提交按钮 -->
+    <button class="submit-button" @click="submitComment">提交评论</button>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      content: "", // 评论内容
+    };
+  },
+  methods: {
+    // 提交评论
+    async submitComment() {
+      if (!this.content) {
+        uni.showToast({
+          title: "请填写评论内容",
+          icon: "none",
+        });
+        return;
+      }
+
+      const postId = this.$route.params.postId; // 从路由获取帖子的ID
+
+      const commentCreateDTO = {
+        content: this.content,
+      };
+
+      try {
+        const token = uni.getStorageSync("token"); // 从 uni-app 本地存储获取 token
+        if (!token) {
+          uni.showToast({
+            title: "用户未登录，请先登录",
+            icon: "none",
+          });
+          return;
+        }
+
+        const response = await uni.request({
+          url: `http://localhost:8080/api/comment/${postId}`,
+          method: "POST",
+          header: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          data: commentCreateDTO,
+        });
+
+        if (response[1].statusCode === 200) {
+          uni.showToast({
+            title: "评论成功",
+            icon: "success",
+          });
+          uni.navigateTo({
+            url: `/pages/posts/postDetail/postDetail?postId=${postId}`, // 跳转到帖子详情页
+          });
+        } else {
+          uni.showToast({
+            title: `创建评论失败: ${response[1].data.message}`,
+            icon: "none",
+          });
+        }
+      } catch (error) {
+        console.error("提交失败:", error);
+        uni.showToast({
+          title: "创建评论时发生错误，请稍后再试",
+          icon: "none",
+        });
+      }
+    },
+  },
+};
+</script>
+
+<style>
+.create-comment-container {
+  max-width: 800px;
+  margin: 50px auto;
+  padding: 30px;
+  background: #f9f9f9;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  font-family: Arial, sans-serif;
+  color: #333;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 8px;
+  font-size: 16px;
+}
+
+textarea {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+  height: 120px;
+  resize: vertical;
+}
+
+.submit-button {
+  display: block;
+  width: 100%;
+  padding: 15px;
+  background-color: #28a745;
+  color: #fff;
+  font-size: 18px;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.submit-button:hover {
+  background-color: #218838;
+}
+</style>

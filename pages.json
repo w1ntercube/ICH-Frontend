@@ -35,7 +35,33 @@
       "style": {
         "navigationBarTitleText": "韵宝知晓"
       }
-    }
+    },
+    {
+    	"path" : "pages/posts/postDetail/postDetail",
+    	"style" : 
+    	{
+    		"navigationBarTitleText" : "帖子详情"
+    	}
+    },
+	{
+		"path" : "pages/posts/createPost/createPost",
+		"style" : 
+		{
+			"navigationBarTitleText" : "新建帖子"
+		}
+	},
+	{
+		"path": "pages/posts/comment/comment",
+		"style": {
+			"navigationBarTitleText": "评论详情"
+		}
+	},
+	{
+		"path": "pages/posts/comment/createComment",
+		"style": {
+			"navigationBarTitleText": "新建评论"
+		}
+	}
   ],
   "tabBar": {
     "color": "#7A7E83",
@@ -63,3 +89,4 @@
       }
     ]
   }
+}

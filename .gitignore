@@ -1,0 +1,42 @@
+# Node.js modules (如果使用了 Node.js)
+node_modules/
+
+# HBuilderX 项目生成的文件
+*.log
+*.bak
+*.swp
+*.swo
+
+# HBuilderX 内部缓存和配置
+.vscode/
+.idea/
+HBuilderX/
+dist/
+build/
+unpackage/
+# 操作系统生成的文件
+.DS_Store
+Thumbs.db
+
+# 本地配置文件
+*.local
+*.env
+
+# 临时文件
+*.tmp
+*.temp
+
+# IDE、编辑器生成的配置文件（可以根据需要选择忽略）
+*.iml
+*.user
+*.sublime-workspace
+*.sublime-project
+
+# 打包生成的文件和目录
+/dist
+/build
+/out
+
+# 其他生成的文件
+*.apk
+*.ipa
