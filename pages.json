@@ -67,6 +67,20 @@
 		"style": {
 			"navigationBarTitleText": "新建评论"
 		}
+	},
+	{
+		"path" : "pages/login/register/register",
+		"style" : 
+		{
+			"navigationBarTitleText" : ""
+		}
+	},
+	{
+		"path" : "pages/login/verifyLogin/verifyLogin",
+		"style" : 
+		{
+			"navigationBarTitleText" : ""
+		}
 	}
   ],
   "tabBar": {
