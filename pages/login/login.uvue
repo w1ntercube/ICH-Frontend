@@ -1,0 +1,179 @@
+<template>
+  <view class="login-container">
+    <view class="form">
+      <view class="input-group">
+        <text class="label">用户名</text>
+        <input 
+          v-model="userString" 
+          type="text" 
+          placeholder="请输入用户名"
+          class="input-field"
+        />
+      </view>
+
+      <view class="input-group">
+        <text class="label">密码</text>
+        <input 
+          v-model="password" 
+          type="password" 
+          placeholder="请输入密码"
+          class="input-field"
+        />
+      </view>
+
+      <button @click="login" class="login-button">登录</button>
+      <!-- 登录错误提示 -->
+      <view v-if="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      userString: '', // 用户名
+      password: '',   // 密码
+      errorMessage: '', // 错误信息
+      isLoading: false, // 加载状态
+    };
+  },
+  methods: {
+    login() {
+      // 验证输入
+      if (this.userString === '' || this.password === '') {
+        this.errorMessage = '用户名和密码不能为空';
+        return;
+      }
+
+      this.isLoading = true; // 开始请求时禁用按钮
+
+      // 发起登录请求
+      uni.request({
+        url: 'http://localhost:8080/api/auth/loginByPassword', // 登录接口
+        method: 'POST',
+        data: {
+          userString: this.userString,
+          password: this.password,
+        },
+        header: {
+          'Content-Type': 'application/json',
+        },
+        success: (response) => {
+          this.isLoading = false; // 请求结束时恢复按钮状态
+        
+          if (response.statusCode === 200) {
+            const responseData = response.data; // 直接获取响应数据
+            // console.log('Response Data:', responseData); // 查看返回的具体数据结构
+			const token = responseData.data.token;
+			// console.log('token:', token);
+			// 将 token 存储在本地，并添加 "Bearer " 前缀
+			const tokenWithBearer = 'Bearer ' + token; // 在 token 前面加上 "Bearer " 字符串
+			uni.setStorageSync('token', tokenWithBearer); // 使用 sync 版本存储 token
+			// console.log('Stored Token:', tokenWithBearer); // 打印存储的 token
+			// const trytoken = uni.getStorageSync('token'); // 获取存储的 token
+			// console.log('TryToken:', trytoken); // 打印存储的 token
+			// 跳转到 TabBar 页面
+			uni.switchTab({
+				url: '/pages/home/home',  // 跳转到 TabBar 页面（首页）
+			    success: () => {
+			        console.log("Navigation to TabBar page successful"); // 打印跳转成功
+			    },
+			    fail: (err) => {
+			        console.error("Navigation failed", err); // 打印跳转失败信息
+			    }
+			});
+          }
+        },
+        fail: (error) => {
+          this.isLoading = false; // 请求失败时恢复按钮状态
+          // 网络请求失败
+          this.errorMessage = "网络错误，请重试";
+          console.error("Request failed", error); // 打印请求失败信息
+        }
+      });
+    },
+    clearError() {
+      this.errorMessage = ''; // 清除错误信息
+    }
+  },
+};
+</script>
+
+<style>
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f2f2f2;
+}
+
+.form {
+  width: 80%;
+  max-width: 400px;
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.label {
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.input-field {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.input-field.error {
+  border-color: red; /* 错误时，密码框边框变红 */
+}
+
+.login-button {
+  width: 100%;
+  padding: 12px;
+  background-color: #007aff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.login-button:disabled {
+  background-color: #ddd;
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #fff;
+  border-top: 2px solid #007aff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-message {
+  color: red;
+  font-size: 14px;
+  margin-top: 10px;
+}
+</style>

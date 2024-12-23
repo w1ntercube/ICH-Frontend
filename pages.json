@@ -1,5 +1,11 @@
 {
   "pages": [
+	  {
+	    "path": "pages/login/login",
+	    "style": {
+	      "navigationStyle": "custom"
+	    }
+	  },
     {
       "path": "pages/home/home",
       "style": {
