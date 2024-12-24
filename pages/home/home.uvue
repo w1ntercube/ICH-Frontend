@@ -16,42 +16,79 @@
         <image class="swiper-image" src="/static/images/slide-2.png" mode="aspectFill"></image>
       </swiper-item>
     </swiper>
-	
+	 <!-- 公告栏 -->
+		<view class="notice-bar" v-if="showNotice">
+		  <image class="notice-icon" src="/static/images/中国结.png" mode="aspectFit"></image>
+		  <text class="notice-text">版本更新通知：v2.5版本已经发布，修复了若干BUG。</text>
+		  <text class="notice-close" @click="closeNotice">×</text>
+		</view>
+		
 	    <!-- 三个并行按钮 -->
 	    <view class="button-group">
 
 	      <view class="button-item" @click="goToPage('events')">
 	        <view class="button-background">
 	        <image class="button-icon" src="/static/images/events.png"></image>
-	        <text class="button-text">传艺方圆</text>
+	        <text class="button-text">传 艺</text>
+			<text class="button-text">方 圆</text>
 			</view>
 	      </view>
 	
 	      <view class="button-item" @click="goToPage('shop')">
 	        <view class="button-background">
 	        <image class="button-icon" src="/static/images/shop.png"></image>
-	        <text class="button-text">匠心珍选</text>
+	        <text class="button-text">匠 心</text>
+			<text class="button-text">珍 选</text>
 			</view>
 	      </view>
 	
 	      <view class="button-item" @click="goToPage('AI-Q&A')">
 			<view class="button-background">
 	        <image class="button-icon" src="/static/images/AI-Q&A.png"></image>
-	        <text class="button-text">韵宝知晓</text>
+	        <text class="button-text">韵 宝</text>
+			<text class="button-text">知 晓</text>
 			</view>
 	      </view>
-	    </view>
-	
-    <image class="corner-image" src="/static/images/little-girl.png"></image>
-    <!-- 其余页面内容 -->
-	
-	
-  </view>
+	    </view> 
+        <image class="corner-image" src="/static/images/little-girl.png"></image>
+		<image class="cloud-image" src="/static/images/祥云.png"></image>
+		<!-- 文化雅集模块 -->
+		    <view class="culture-section">
+		      <text class="culture-title">文 化 雅 集</text>
+		      <view class="culture-container">
+		        
+		        <view class="post-list">
+		          <view class="post-card" v-for="(post, index) in posts" :key="index">
+		            <image class="post-image" :src="post.image" mode="aspectFill"></image>
+		            <view class="post-content">
+		              <text class="post-title">{{ post.title }}</text>
+		              <text class="post-desc">{{ post.description }}</text>
+		            </view>
+		          </view>
+		        </view>
+		      </view>
+		    </view>
+      </view>
 </template>
 
 <script>
 export default {
+	data() {
+	    return {
+	      showNotice: true,
+	      posts: [
+	        {
+	          image: '/static/images/磁州窑.png',
+	          title: '窑火千年不熄',
+	          description: '古窑之美，千年传承'
+	        }
+	      ]
+	    }
+    },
   methods: {
+   closeNotice() {
+		this.showNotice = false
+	},
     goToPage(page) {
       uni.navigateTo({
         url: `/pages/${page}/${page}`
@@ -67,16 +104,16 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  height: 100%;
-  padding-top: 20px;
-  background-color: rgb(255, 250, 242); /* 设置页面背景色 */
+  height: 150%;
+  padding-top: 0px;
+  background-color: #fffaf2;
 }
 
 /* 滑动栏样式 */
 .swiper {
   width: 100%;
   height: 200px;
-  margin-bottom: 20px;
+  margin-bottom: 5px;
 }
 
 .swiper-image {
@@ -94,7 +131,7 @@ export default {
 /* 右下角覆盖的图片样式 */
 .corner-image {
   position: absolute;
-  top: 140px; 
+  top: 125px; 
   right: 10px; 
   width: 80px;
   height: 80px;
@@ -106,8 +143,8 @@ export default {
   flex-direction: row; /* 水平排列按钮 */
   justify-content: space-between; 
   width: 100%; 
-  padding: 5px 20px; 
-  border-radius: 10px; /* 添加圆角，数字越大圆角越明显 */
+  padding: 5px 5px; 
+
 }
 
 /* 单个按钮样式 */
@@ -116,15 +153,17 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 85px;
+  width: 100px;
   height: 110px;
-  border-radius: 10px;
+  border-radius: 15px;
+  padding-top:10px;
+  padding-bottom: 10px;
 }
 
 /* 按钮图标 */
 .button-icon {
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   margin-bottom: 8px;
 }
 
@@ -134,23 +173,128 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100px; /* 按钮背景宽度 */
-  height: 120px; /* 按钮背景高度 */
+  width: 80px; /* 按钮背景宽度 */
+  height: 100px; /* 按钮背景高度 */
   background-color: #fedec8; /* 圆角矩阵背景色 */
-  border-radius: 30px; /* 圆角效果 */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 阴影效果 */
+  border-radius: 15px; /* 圆角效果 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* 按钮文字 */
 .button-text {
+  font-weight: bold;
   font-size: 14px;
-  color: #333;
+  color: #79654b;
 }
 
 /* 其余内容样式 */
 .text {
   font-size: 50px;
-  color: ##bf7977;
+  color: #bf7977;
+}
+/* 公告栏样式 */
+.notice-bar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 90%;
+  height: 40px;
+  background-color:rgba(255, 250, 232, 1.0);
+  border-color:#ffe58f;
+  border-width: 2px;
+  border-style: solid;
+  padding: 0 0px;
+  margin: 5px 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.notice-icon {
+  width: 25px;
+  height: 25px;
+  margin-right: 10px;
+}
+
+.notice-text {
+  flex: 1;
+  font-size: 6px;
+  color: #666;
+}
+
+.notice-close {
+  font-size: 20px;
+  color: #999;
+  padding: 0 5px;
+}
+/* 文化雅集模块样式 */
+.culture-section {
+  width: 90%;
+  margin-top: 20px;
+  display:flex;
+}
+
+.culture-title {
+  font-size: 26px;
+  text-align:left;
+  margin-left: 8px;
+  background: linear-gradient(to bottom, #b69f7f, #4ecdc4);
+  -webkit-background-clip: text;
+  color: transparent;
+  font-weight: bold;
+}
+
+.culture-container {
+  position: relative;
+  background-color: rgba(78, 205, 196, 0.1);
+  border-radius: 15px;
+  padding: 20px;
+}
+.cloud-image {
+  position: absolute;
+  top:380px;
+    right: 10px; 
+    width: 120px;
+    height: 60px;
+	z-index: 3;
+}
+
+.post-list {
+  position: relative;
+  z-index: 1s;
+}
+
+.post-card {
+  display: flex;
+  flex-direction:row;
+  background-color: white;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.post-image {
+  width: 130px;
+  height:200px;
+  flex-shrink: 0;
+}
+.post-content {
+  flex: 1;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  
+}
+
+.post-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+.post-desc {
+  font-size: 14px;
+  color: #666;
+  margin-top: 20px;
 }
 
 </style>
