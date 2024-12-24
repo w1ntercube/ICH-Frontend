@@ -56,7 +56,7 @@
 export default {
   data() {
     return {
-      defaultAvatar: 'https://example.com/default-avatar.jpg', // 默认头像 URL
+      defaultAvatar: '/static/images/默认.png', // 默认头像 URL
       userInfo: {
 		userid:0,
         username: '',

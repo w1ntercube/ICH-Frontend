@@ -81,8 +81,31 @@ export default {
         this.errorMessage = '请输入手机号';
         return;
       }
-
-      // 调用发送验证码接口
+    
+      // 先检查手机号是否已注册
+      uni.request({
+        url: 'http://localhost:8080/api/auth/verifyPhone',
+        method: 'POST',
+        data: {
+          phone: this.phone,
+        },
+        success: (response) => {
+          if (response.statusCode === 200) {
+            console.log("手机号可以注册");
+            this.sendVerificationCode();
+          } else {
+            this.errorMessage = '手机号已经存在';
+          }
+        },
+        fail: (error) => {
+          this.errorMessage = '网络错误，请重试';
+          console.error("检查手机号失败", error);
+        }
+      });
+    },
+   
+    // 发送验证码的函数
+    sendVerificationCode() {
       uni.request({
         url: 'http://localhost:8080/api/sms/sendCode',
         method: 'POST',
@@ -94,7 +117,7 @@ export default {
             console.log("验证码发送成功");
             this.errorMessage = '验证码已发送，请查收';
           } else {
-            this.errorMessage = '验证码发送失败';
+            this.errorMessage = '验证码发送失败，请稍后再试';
           }
         },
         fail: (error) => {
@@ -110,7 +133,7 @@ export default {
         this.errorMessage = '请输入手机号和验证码';
         return false;
       }
-
+    
       return new Promise((resolve, reject) => {
         uni.request({
           url: 'http://localhost:8080/api/sms/verifyCode',
@@ -121,16 +144,17 @@ export default {
           },
           success: (response) => {
             if (response.statusCode === 200) {
-              resolve(true);
+              const responseData = response.data;
+              resolve(true); // 验证成功
             } else {
-              this.errorMessage = '验证码验证失败';
-              reject(false);
+              this.errorMessage = '验证码验证失败，请检查验证码';
+              reject(false); // 验证失败
             }
           },
           fail: (error) => {
-            this.errorMessage = '网络错误，请重试';
+            this.errorMessage = '验证码验证失败，请检查验证码';
             console.error("验证码验证请求失败", error);
-            reject(false);
+            reject(false); // 请求失败
           }
         });
       });
@@ -161,13 +185,18 @@ export default {
           username: this.username,
           password: this.password
         },
-        header: {
-        },
         success: (response) => {
           this.isLoading = false;
 
           if (response.statusCode === 201) {
-			this.errorMessage = '注册成功，请返回登录';
+            this.errorMessage = '注册成功，请返回登录';
+            
+            setTimeout(() => {
+              uni.navigateTo({
+                url: '/pages/login/login',
+              });
+            }, 800);
+
           } else {
             this.errorMessage = '注册失败，可能由于电话号或邮箱重复';
           }
@@ -181,6 +210,8 @@ export default {
     }
   },
 };
+
+
 </script>
 
 <style>
