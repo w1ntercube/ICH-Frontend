@@ -81,7 +81,7 @@ export default {
       if (this.userInfo.role === 'ADMIN') {
         this.buttons = this.allButtons; // 显示所有按钮
         return '管理员';
-      } else if (this.userInfo.role === 'HERITAGE_INHERITOR') {
+      } else if (this.userInfo.role === 'APPRAISER') {
         this.buttons = this.allButtons; // 显示所有按钮
         return '非遗传承人';
       } else {

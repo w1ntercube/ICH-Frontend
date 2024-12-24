@@ -78,7 +78,7 @@
 		"path" : "pages/login/register/register",
 		"style" : 
 		{
-			"navigationBarTitleText" : ""
+			"navigationStyle": "custom"
 		}
 	},
 	{
@@ -99,56 +99,56 @@
 		"path" : "pages/user/likePost/likePost",
 		"style" : 
 		{
-			"navigationBarTitleText" : ""
+			"navigationBarTitleText" : "我的点赞"
 		}
 	},
 	{
 		"path" : "pages/user/publishProduct/publishProduct",
 		"style" : 
 		{
-			"navigationBarTitleText" : ""
+			"navigationBarTitleText" : "发布商品"
 		}
 	},
 	{
 		"path" : "pages/user/favouritePost/favouritePost",
 		"style" : 
 		{
-			"navigationBarTitleText" : ""
+			"navigationBarTitleText" : "我的收藏"
 		}
 	},
 	{
 		"path" : "pages/user/publishPost/publishPost",
 		"style" : 
 		{
-			"navigationBarTitleText" : ""
+			"navigationBarTitleText" : "发布帖子"
 		}
 	},
 	{
 		"path" : "pages/user/deleteEvent/deleteEvent",
 		"style" : 
 		{
-			"navigationBarTitleText" : ""
+			"navigationBarTitleText" : "删除活动"
 		}
 	},
 	{
 		"path" : "pages/user/changeEvent/changeEvent",
 		"style" : 
 		{
-			"navigationBarTitleText" : ""
+			"navigationBarTitleText" : "更改活动"
 		}
 	},
 	{
 		"path" : "pages/user/publishEvent/publishEvent",
 		"style" : 
 		{
-			"navigationBarTitleText" : ""
+			"navigationBarTitleText" : "发布活动"
 		}
 	},
 	{
 		"path" : "pages/shop/SalePage/SalePage",
 		"style" : 
 		{
-			"navigationBarStyle": "custom"
+			"navigationStyle": "custom"
 		}
 	}
   ],

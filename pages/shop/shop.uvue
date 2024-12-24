@@ -87,7 +87,7 @@ export default {
       products: [], // 商品列表
       lastId: 0, // 最后一个商品的ID
       loading: false, // 是否正在加载
-      limit: 2 ,// 每次加载的商品数量
+      limit: 5 ,// 每次加载的商品数量
 	  searchKeyword: '',
 	  hasMore: true, // 是否还有更多数据
     }
@@ -252,7 +252,6 @@ export default {
 .shop-container {
   display: flex;
   flex-direction: column;
-  height: 1110px;
   background-color: #fffaf2;
   overflow: hidden; /* 禁用外层容器的滚动 */
   
