@@ -30,21 +30,37 @@
         class="post-card"
         @click="goToPostDetail(post.postId)"
       >
-        <img :src="post.imageUrl" alt="帖子图片" class="post-image" />
-        <div class="post-info">
-          <div class="user-info">
-            <span class="user-name">{{ post.userName }}</span>
-          </div>
-          <h3 class="post-title">{{ post.title }}</h3>
-          <div class="post-stats">
-            <span class="stat-item">
-              <img src="/static/images/like.png" class="icon" /> {{ post.likes }}
-            </span>
-            <span class="stat-item">
-              <img src="/static/images/comment.png" class="icon" /> {{ post.comments }}
-            </span>
-          </div>
+        <div class="post-image-container">
+            <img :src="post.imageUrl" alt="帖子图片" class="post-image" />
         </div>
+        <div class="post-info">
+			<h3 class="post-title">{{ post.title }}</h3>
+          <div class="user-info">
+              <img 
+                :src="post.profilePicture" 
+                alt="用户头像" 
+                class="user-image"
+                :style="{ borderColor: post.role === 'HERITAGE_INHERITOR' ? '#FFD700' : '#C0C0C0' }"
+              />
+               <span 
+                  class="user-name"
+                  :style="{ color: post.role === 'HERITAGE_INHERITOR' ? '#FFD700' : '#808080' }"
+                >
+                  {{ post.userName }}
+                </span>
+			  <div class="post-stats">
+			    <span class="stat-item">
+			      <img src="/static/images/like.png" class="icon" /> {{ post.likes }}
+			    </span>
+			    <span class="stat-item">
+			      <img src="/static/images/comment.png" class="icon" /> {{ post.comments }}
+			    </span>
+			  </div>
+            </div>
+          
+		  
+        </div>
+		
       </div>
     </div>
   </div>
@@ -64,10 +80,11 @@ export default {
     // 从后端获取帖子数据
     async fetchPosts() {
       try {
-        const response = await fetch("http://localhost:8080/api/post/profile"); // 替换为实际 API 地址
+        const response = await fetch("http://localhost:8080/api/post/profile"); 
         const data = await response.json();
         this.posts = data;
         this.filteredPosts = data;
+		console.log("posts:",this.posts)
       } catch (error) {
         console.error("获取帖子失败:", error);
       }
@@ -103,7 +120,7 @@ export default {
 <style>
 .container {
   padding: 20px;
-  background-color: #f5f5f5;
+  background-color: #fffaf2;
   font-family: Arial, sans-serif;
 }
 
@@ -145,63 +162,85 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  padding: 10px;
 }
 
 .post-card {
+  width: 100%; /* 控制卡片宽度 */
   display: flex;
+  flex-direction: column; /* 改为垂直排列 */
   background: #fff;
-  border-radius: 10px;
+  border-radius: 15px;
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding-bottom: 5px;
 }
 
+.post-image-container {
+  width: 100%;
+  height: 40%; /* 图片区域占 60% */
+}
 .post-image {
-  width: 100px;
-  height: 100px;
+  width: 100%; /* 图片宽度相对于卡片 */
+  height: 180px; /* 固定高度 */
   object-fit: cover;
-}
-
-.post-info {
-  flex: 1;
-  padding: 10px;
+  border-radius: 0px; /* 图片圆角 */
 }
 
 .user-info {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  margin-bottom: 10px;
+  gap: 10px; /* 头像和用户名之间的间距 */
 }
 
+.user-image {
+  width: 30px; /* 减小头像尺寸 */
+  height: 30px;
+  border-radius: 50%; /* 圆形头像 */
+  border: 2px solid; /* 边框宽度 */
+  object-fit: cover;
+}
+.post-info {
+  width: 90%; /* 文字信息区域宽度 */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* 文字居中 */
+  
+}
 .user-name {
-  font-weight: bold; /* 保持加粗 */
-  font-size: 14px; /* 设置比标题小的字体大小 */
-  color: #555; /* 深灰色 */
+  font-size: 14px;
+  color: #666;
+  font-weight: normal; 
 }
-
 
 .post-title {
-  font-size: 15px;
-  margin: 13px 0;
+  font-size: 16px;
+  color: #8B4513; /* 棕色 */
+  font-weight:normal;
+  text-align: center;
+  margin:8px;
+  padding-left: 10px;
 }
 
 .post-stats {
-  display: flex; /* 使用 flex 布局 */
-  gap: 15px; /* 图标和文字之间的间距 */
-  align-items: center; /* 垂直居中对齐 */
-  font-size: 14px; /* 字体大小 */
-  color: #555; /* 文本颜色 */
+  display: flex;
+  justify-content: center; /* 统计信息居中 */
+  gap: 20px;
+  color: #666;
+  margin-left: 40px;
 }
 
 .stat-item {
-  display: flex; /* 子元素也使用 flex 布局 */
-  align-items: center; /* 图片和文字垂直居中 */
-  gap: 5px; /* 图片和文字之间的间距 */
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 5px;
 }
 
 .icon {
-  width: 20px; /* 设置图片宽度 */
-  height: 20px; /* 设置图片高度，保证一致 */
-  vertical-align: middle; /* 图片和文字在基线上对齐 */
+  width: 18px;
+  height: 18px;
 }
 .create-post {
   display: flex;
