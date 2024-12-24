@@ -73,6 +73,7 @@ export default {
               { name: '我收藏的帖子', page: '/pages/user/favouritePost/favouritePost' },
               { name: '我发布的帖子', page: '/pages/user/publishPost/publishPost' },
               { name: '发布商品', page: '/pages/user/publishProduct/publishProduct' },
+			  { name: '我的橱窗', page: '/pages/user/myShop/myShop' },
               { name: '发布活动', page: '/pages/user/publishEvent/publishEvent' },
               { name: '修改活动', page: '/pages/user/changeEvent/changeEvent' },
               { name: '删除活动', page: '/pages/user/deleteEvent/deleteEvent' }
@@ -443,7 +444,7 @@ export default {
   color: #333;
   font-size: 14px;
   cursor: pointer;
-  margin-bottom: 3px;
+  margin-bottom: 5px;
   width: 100%;
   display: flex;
   align-items: center; /* 垂直居中对齐文本和图标 */
