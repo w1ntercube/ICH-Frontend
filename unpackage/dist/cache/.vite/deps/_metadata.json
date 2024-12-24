@@ -1,13 +1,13 @@
 {
-  "hash": "ffe499f3",
-  "configHash": "90227c80",
+  "hash": "32c65ae0",
+  "configHash": "843080c2",
   "lockfileHash": "7e59e4af",
-  "browserHash": "2e5545d8",
+  "browserHash": "8a240484",
   "optimized": {
     "axios": {
       "src": "../../../../../node_modules/axios/index.js",
       "file": "axios.js",
-      "fileHash": "2a8dcd18",
+      "fileHash": "34d10e34",
       "needsInterop": false
     }
   },
