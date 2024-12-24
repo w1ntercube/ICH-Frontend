@@ -166,8 +166,6 @@
 	    },
 	
 	
-	
-	
 		// 打开编辑框并初始化活动数据
 	  openEditDialog(eventId) {
 		// 根据活动 ID 查找活动数据
@@ -370,41 +368,41 @@
 }
 
 .event-item {
-  display: flex; /* 使用flexbox布局 */
-  flex-direction: row; /* 水平方向排列 */
-  align-items: center; /* 垂直方向居中 */
+  display: flex; 
+  flex-direction: row; 
+  align-items: center; 
   padding: 10px;
   margin-bottom: 10px;
   background-color: #ffffff;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
-  transition: transform 0.2s ease-in-out; /* 鼠标悬停时的动画 */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out;
 }
 
 .event-item:hover {
-  transform: translateY(-3px); /* 鼠标悬停时轻微上移 */
+  transform: translateY(-3px); 
 }
 
 .event-image {
   width: 80px;
   height: 80px;
   border-radius: 8px;
-  object-fit: cover; /* 保持图片比例 */
-  margin-right: 10px; /* 图片和文字之间的间距 */
+  object-fit: cover; 
+  margin-right: 10px; 
 }
 
 .event-info {
-  flex: 1; /* 占据剩余空间 */
+  flex: 1;
   display: flex;
-  flex-direction: column; /* 垂直排列文字 */
-  justify-content: center; /* 垂直方向居中 */
+  flex-direction: column;
+  justify-content: center; 
 }
 
 .event-title {
   font-size: 16px;
   font-weight: bold;
   color: #333;
-  margin-bottom: 5px; /* 标题和位置之间的间距 */
+  margin-bottom: 5px;
 }
 
 .event-location {
@@ -495,8 +493,8 @@ button:nth-child(2) {
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 5px;
-  resize: none; /* 禁止用户调整大小 */
-  overflow-y: auto; /* 超出范围时显示滚动条 */
+  resize: none; 
+  overflow-y: auto; 
   font-size: 14px;
   line-height: 1.5;
 }
