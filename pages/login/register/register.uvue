@@ -1,7 +1,6 @@
 <template>
   <view class="register-container">
     <view class="form">
-      <!-- 手机号输入 -->
       <view class="input-group">
         <text class="label">手机号</text>
         <input 
@@ -13,7 +12,6 @@
 		 <button @click="getCode" class="code-button">获取验证码</button>
       </view>
 	  
-	  <!-- 验证码输入 -->
 	  <view class="input-group">
 	    <text class="label">验证码</text>
 	    <input 
@@ -24,7 +22,6 @@
 	    />
 	  </view>
 
-      <!-- 邮箱输入 -->
       <view class="input-group">
         <text class="label">邮箱</text>
         <input 
@@ -35,7 +32,6 @@
         />
       </view>
 
-      <!-- 用户名输入 -->
       <view class="input-group">
         <text class="label">用户名</text>
         <input 
@@ -46,7 +42,6 @@
         />
       </view>
 
-      <!-- 密码输入 -->
       <view class="input-group">
         <text class="label">密码</text>
         <input 
@@ -57,10 +52,8 @@
         />
       </view>
 
-      <!-- 注册按钮 -->
       <button @click="register" class="register-button">注册</button>
 
-      <!-- 错误信息提示 -->
       <view v-if="errorMessage" class="error-message">
         {{ errorMessage }}
       </view>
@@ -72,13 +65,13 @@
 export default {
   data() {
     return {
-      phone: '',      // 手机号
-      email: '',      // 邮箱
-      username: '',   // 用户名
-      password: '',   // 密码
-      code: '',    // 验证码
-      errorMessage: '', // 错误信息
-      isLoading: false, // 加载状态
+      phone: '',
+      email: '',
+      username: '',
+      password: '',
+      code: '',
+      errorMessage: '',
+      isLoading: false,
     };
   },
   methods: {
@@ -88,20 +81,43 @@ export default {
         this.errorMessage = '请输入手机号';
         return;
       }
-
-      // 调用发送验证码接口
+    
+      // 先检查手机号是否已注册
       uni.request({
-        url: 'http://localhost:8080/api/sms/sendCode', // 修改为发送验证码接口
+        url: 'http://localhost:8080/api/auth/verifyPhone',
         method: 'POST',
         data: {
-          phone: this.phone,  // 请求参数为手机号
+          phone: this.phone,
+        },
+        success: (response) => {
+          if (response.statusCode === 200) {
+            console.log("手机号可以注册");
+            this.sendVerificationCode();
+          } else {
+            this.errorMessage = '手机号已经存在';
+          }
+        },
+        fail: (error) => {
+          this.errorMessage = '网络错误，请重试';
+          console.error("检查手机号失败", error);
+        }
+      });
+    },
+   
+    // 发送验证码的函数
+    sendVerificationCode() {
+      uni.request({
+        url: 'http://localhost:8080/api/sms/sendCode',
+        method: 'POST',
+        data: {
+          phone: this.phone,
         },
         success: (response) => {
           if (response.statusCode === 200) {
             console.log("验证码发送成功");
             this.errorMessage = '验证码已发送，请查收';
           } else {
-            this.errorMessage = '验证码发送失败';
+            this.errorMessage = '验证码发送失败，请稍后再试';
           }
         },
         fail: (error) => {
@@ -117,34 +133,34 @@ export default {
         this.errorMessage = '请输入手机号和验证码';
         return false;
       }
-
+    
       return new Promise((resolve, reject) => {
-        // 调用验证验证码接口
         uni.request({
-          url: 'http://localhost:8080/api/sms/verifyCode', // 验证验证码接口
+          url: 'http://localhost:8080/api/sms/verifyCode',
           method: 'POST',
           data: {
             phone: this.phone,  
-            code: this.code // 输入的验证码
+            code: this.code
           },
           success: (response) => {
             if (response.statusCode === 200) {
-              resolve(true);
+              const responseData = response.data;
+              resolve(true); // 验证成功
             } else {
-              this.errorMessage = '验证码验证失败';
-              reject(false);
+              this.errorMessage = '验证码验证失败，请检查验证码';
+              reject(false); // 验证失败
             }
           },
           fail: (error) => {
-            this.errorMessage = '网络错误，请重试';
+            this.errorMessage = '验证码验证失败，请检查验证码';
             console.error("验证码验证请求失败", error);
-            reject(false);
+            reject(false); // 请求失败
           }
         });
       });
     },
 
-    // 注册逻辑
+    // 注册
     async register() {
       if (!this.phone || !this.email || !this.username || !this.password) {
         this.errorMessage = '请完整填写所有字段';
@@ -160,9 +176,8 @@ export default {
         return;
       }
 
-      // 验证通过后进行注册
       uni.request({
-        url: 'http://localhost:8080/api/auth/register', // 注册接口
+        url: 'http://localhost:8080/api/auth/register',
         method: 'POST',
         data: {
           phone: this.phone,
@@ -170,18 +185,20 @@ export default {
           username: this.username,
           password: this.password
         },
-        header: {
-        },
         success: (response) => {
           this.isLoading = false;
 
           if (response.statusCode === 201) {
-			this.errorMessage = '注册成功，请返回登录';
-            // uni.navigateTo({
-            //   url: '/pages/login/login', // 注册成功后跳转到登录页面
-            // });
+            this.errorMessage = '注册成功，请返回登录';
+            
+            setTimeout(() => {
+              uni.navigateTo({
+                url: '/pages/login/login',
+              });
+            }, 800);
+
           } else {
-            this.errorMessage = '注册失败，可能由于电话号或邮箱重复';
+            this.errorMessage = '注册失败，可能由于邮箱重复';
           }
         },
         fail: (error) => {
@@ -214,7 +231,7 @@ export default {
 }
 
 .input-group {
-  margin-bottom: 10px; /* 调整上下间距 */
+  margin-bottom: 10px;
 }
 
 .label {
@@ -225,26 +242,25 @@ export default {
 
 .input-field {
   width: 100%;
-  padding: 8px; /* 调整输入框的上下内边距 */
+  padding: 8px;
   border: 1px solid #ddd;
   border-radius: 4px;
 }
 
 .register-button {
-  width: 100%; /* 按钮宽度 */
+  width: 100%;
   padding: 10px;
   background-color: rgb(238, 225, 215);
   color: black;
   margin-top: 10px;
   border: none;
   border-radius: 4px;
-  font-size: 14px; /* 更小的字体 */
+  font-size: 14px;
   cursor: pointer;
-  height: 30px; /* 调整按钮高度 */
-  
-  display: flex; /* 启用 Flexbox */
-  justify-content: center; /* 水平居中 */
-  align-items: center; /* 垂直居中 */
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .register-button:disabled {
@@ -252,20 +268,19 @@ export default {
 }
 
 .code-button {
- width: 100%; /* 按钮宽度 */
+ width: 100%;
  padding: 10px;
  background-color: rgb(238, 225, 215);
  color: black;
  margin-top: 10px;
  border: none;
  border-radius: 4px;
- font-size: 14px; /* 更小的字体 */
+ font-size: 14px;
  cursor: pointer;
- height: 30px; /* 调整按钮高度 */
- 
- display: flex; /* 启用 Flexbox */
- justify-content: center; /* 水平居中 */
- align-items: center; /* 垂直居中 */
+ height: 30px;
+ display: flex;
+ justify-content: center;
+ align-items: center;
 }
 
 .error-message {
