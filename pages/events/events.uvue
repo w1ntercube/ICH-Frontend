@@ -81,7 +81,7 @@ export default {
             success: (res) => resolve(res),
             fail: (err) => {
               console.warn("定位失败，使用默认位置:", err);
-              resolve({ latitude: 31.364384, longitude: 121.266229 }); // 默认上海
+              resolve({ latitude: 31.364384, longitude: 121.266229 }); // 默认上海市嘉定区
             },
           });
         });

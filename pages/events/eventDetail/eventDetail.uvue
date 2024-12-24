@@ -125,7 +125,7 @@ export default {
         case "PUBLISHED":
           return "进行中";
         case "CANCELLED":
-          return "已取消";
+          return "已结束";
         default:
           return "未知状态";
       }
