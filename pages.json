@@ -151,6 +151,13 @@
 		{
 			"navigationStyle": "custom"
 		}
+	},
+	{
+		"path" : "pages/user/myShop/myShop",
+		"style" : 
+		{
+			"navigationBarTitleText" : "我的橱窗"
+		}
 	}
   ],
   "tabBar": {
