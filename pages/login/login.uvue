@@ -28,7 +28,6 @@
         {{ errorMessage }}
       </view>
 
-      <!-- 注册和验证码登录按钮 -->
       <view class="other-actions">
         <button @click="goToRegister" class="action-button">注册</button>
         <button @click="goToVerifyLogin" class="action-button">验证码登录</button>
@@ -41,27 +40,26 @@
 export default {
   data() {
     return {
-      userString: '', // 手机号
-      password: '',   // 密码
-      errorMessage: '', // 错误信息
-      isLoading: false, // 加载状态
+      userString: '',
+      password: '',
+      errorMessage: '',
+      isLoading: false,
     };
   },
   methods: {
     login() {
-		const token = uni.getStorageSync('token'); // 从本地存储获取 token
+		const token = uni.getStorageSync('token');
 		console.error(token);
-      // 验证输入
+		
       if (this.userString === '' || this.password === '') {
         this.errorMessage = '手机号和密码不能为空';
         return;
       }
 
-      this.isLoading = true; // 开始请求时禁用按钮
+      this.isLoading = true;
 
-      // 发起登录请求
       uni.request({
-        url: 'http://localhost:8080/api/auth/loginByPassword', // 登录接口
+        url: 'http://localhost:8080/api/auth/loginByPassword',
         method: 'POST',
         data: {
           userString: this.userString,
@@ -71,19 +69,17 @@ export default {
           'Content-Type': 'application/json',
         },
         success: (response) => {
-          this.isLoading = false; // 请求结束时恢复按钮状态
+          this.isLoading = false;
           
           if (response.statusCode === 200) {
-            const responseData = response.data; // 直接获取响应数据
+            const responseData = response.data;
             if (responseData) {
-              // 如果返回的 data 中包含 token，说明登录成功
               const token = responseData.data.token;
-              const tokenWithBearer = 'Bearer ' + token; // 在 token 前面加上 "Bearer " 字符串
+              const tokenWithBearer = 'Bearer ' + token;
 				uni.setStorageSync('token', tokenWithBearer);
               console.log('Token stored:', tokenWithBearer);
-			  // 跳转到 TabBar 页面
               uni.switchTab({
-                url: '/pages/home/home',  // 跳转到 TabBar 页面（首页）
+                url: '/pages/home/home',
                 success: () => {
                   console.log("Navigation to TabBar page successful");
                 },
@@ -92,37 +88,32 @@ export default {
                 }
               });
             } else {
-              // 如果服务器返回的 success 为 false 或没有 token，提示登录失败
-              this.errorMessage = "用户名或密码错误"; // 设置错误消息
+              this.errorMessage = "用户名或密码错误";
               console.error("登录失败:", responseData.message || "用户名或密码错误");
             }
           } else {
-            // 如果状态码不是200，提示网络错误或其他问题
             this.errorMessage = "用户名或密码错误";
             console.error("请求失败", response);
           }
         },
         fail: (error) => {
-          this.isLoading = false; // 请求失败时恢复按钮状态
-          // 网络请求失败
+          this.isLoading = false;
           this.errorMessage = "网络错误，请重试";
-          console.error("Request failed", error); // 打印请求失败信息
+          console.error("Request failed", error);
         }
       });
     },
     clearError() {
-      this.errorMessage = ''; // 清除错误信息
+      this.errorMessage = '';
     },
     goToRegister() {
-      // 跳转到注册页面
       uni.navigateTo({
-        url: '/pages/login/register/register' // 修改为注册页面的路径
+        url: '/pages/login/register/register'
       });
     },
     goToVerifyLogin() {
-      // 跳转到验证码登录页面
       uni.navigateTo({
-        url: '/pages/login/verifyLogin/verifyLogin' // 修改为验证码登录页面的路径
+        url: '/pages/login/verifyLogin/verifyLogin'
       });
     }
   },
@@ -135,7 +126,7 @@ export default {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: rgb(238, 225, 215); /* 修改背景色为 rgb(238, 225, 215) */
+  background-color: rgb(238, 225, 215);
 }
 
 .form {
@@ -165,22 +156,22 @@ export default {
 }
 
 .input-field.error {
-  border-color: red; /* 错误时，密码框边框变红 */
+  border-color: red;
 }
 
 .login-button {
   width: 100%;
   padding: 12px;
   background-color: rgb(238, 225, 215);
-  color: black; /* 设置登录按钮文字为黑色 */
+  color: black;
   border: none;
   border-radius: 4px;
   font-size: 16px;
   cursor: pointer;
   height: 40px;
-  display: flex; /* 使用 flexbox */
-  justify-content: center; /* 水平居中 */
-  align-items: center; /* 垂直居中 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .login-button:disabled {
@@ -189,25 +180,25 @@ export default {
 
 .other-actions {
   display: flex;
-  justify-content: space-between; /* 两个按钮水平排列 */
+  justify-content: space-between;
   margin-top: 20px;
 }
 
 .action-button {
-  width: 100%; /* 按钮宽度 */
+  width: 100%;
   padding: 10px;
   background-color: rgb(238, 225, 215);
   color: black;
   margin-top: 10px;
   border: none;
   border-radius: 4px;
-  font-size: 14px; /* 更小的字体 */
+  font-size: 14px;
   cursor: pointer;
-  height: 30px; /* 调整按钮高度 */
+  height: 30px;
   
-  display: flex; /* 启用 Flexbox */
-  justify-content: center; /* 水平居中 */
-  align-items: center; /* 垂直居中 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 
