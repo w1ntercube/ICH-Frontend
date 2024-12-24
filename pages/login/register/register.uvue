@@ -198,7 +198,7 @@ export default {
             }, 800);
 
           } else {
-            this.errorMessage = '注册失败，可能由于电话号或邮箱重复';
+            this.errorMessage = '注册失败，可能由于邮箱重复';
           }
         },
         fail: (error) => {
@@ -210,8 +210,6 @@ export default {
     }
   },
 };
-
-
 </script>
 
 <style>
