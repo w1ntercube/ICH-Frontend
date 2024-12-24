@@ -26,7 +26,7 @@
             <text class="product-price">{{ product.price.toFixed(2) }}</text>
           </view>
           <text class="product-source">商品来源：
-            <img :src="product.sellerAvatar" alt="用户头像" class="user-image"/>
+            <img :src="product.sellerAvatar || '/static/images/默认.png'" alt="用户头像" class="user-image"/>
             <span class="user-name">{{ product.sellerName }}</span>
           </text>
           <text class="product-source">商品类型：
