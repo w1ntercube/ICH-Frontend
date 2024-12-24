@@ -1,53 +1,162 @@
 <template>
-	<view class="container">
-		<view class="product-detail">
-		  <!-- 商品图片区域 -->
-		  <view class="product-image-container">
-		    <image :src="product.imageURL || '/static/images/商品图1.png'" class="product-image" mode="aspectFill" />
-		    
-		  </view>
+  <view class="container">
+    <view class="product-detail">
+      <!-- 编辑按钮 - 仅在 myShop 页面跳转时显示 -->
+      <button v-if="isFromMyShop" class="edit-button" @click="toggleEditMode">点击编辑</button>
+
+      <!-- 商品图片区域 -->
+      <view class="product-image-container">
+		  
+        <image 
+          :src="product.imageURL || '/static/images/商品图1.png'" 
+          class="product-image" 
+          mode="aspectFill" 
+          @click="isFromMyShop && chooseImage()"
+        />
 		
-		  <!-- 商品信息 -->
-		  <view class="product-info">
-		    <text class="product-title">商品名称：{{ product.title }}</text>
-			<view class="price-container">
-			    <image 
-			      src="/static/images/price.png" 
-			      class="price-icon" 
-			      mode="aspectFit"
-			    />
-			    <text class="product-price">{{ product.price.toFixed(2) }}</text>
-			  </view>
-		    <text class="product-source">商品来源：<text class="source-name">{{ product.sellerId }}</text></text>
-		    <text class="product-description">{{ product.description }}</text>
-		  </view>
-		
-		  <!-- 购买按钮 -->
-		  <view class="product-footer">
-		    <button class="buy-btn" @click="goToBuy">点击购买</button>
-		  </view>
+      </view>
+
+      <!-- 商品信息 -->
+      <view class="product-info">
+        <!-- 编辑模式下显示输入框，否则显示文本 -->
+        <view v-if="!editMode">
+          <text class="product-title">商品名称：{{ product.title }}</text>
+          <view class="price-container">
+            <image src="/static/images/price.png" class="price-icon" mode="aspectFit"/>
+            <text class="product-price">{{ product.price.toFixed(2) }}</text>
+          </view>
+          <text class="product-source">商品来源：
+            <img :src="product.sellerAvatar" alt="用户头像" class="user-image"/>
+            <span class="user-name">{{ product.sellerName }}</span>
+          </text>
+          <text class="product-source">商品类型：
+            <text class="type-name">{{product.typeName}}</text>
+          </text>
+          <text class="product-description">{{ product.description }}</text>
+        </view>
+
+        <!-- 编辑模式 -->
+		<view v-else class="image-preview" >
+		  <image
+		    :src="product.imageURL"
+		    class="product-image" 
+		    mode="aspectFill" 
+		    @click="isFromMyShop && chooseImage()"
+		  />
+		  <view class="delete-btn" @click="deleteImage">×</view>
 		</view>
-	</view>
-  
+        <view v-else class="edit-form">
+			<text class="label">商品名称</text>
+          <input 
+            v-model="editForm.title" 
+            class="edit-input" 
+            placeholder="商品名称"
+          />
+		  <text class="label">商品价格</text>
+          <input 
+            v-model="editForm.price" 
+            class="edit-input" 
+            type="number" 
+            placeholder="商品价格"
+          />
+		  <text class="label">商品类型</text>
+          <picker 
+            :range="typeList" 
+            range-key="typeName"
+            @change="handleTypeChange"
+            class="edit-picker"
+          >
+            <view class="picker-text">
+              {{ editForm.typeName }}
+            </view>
+          </picker>
+		  <text class="label">商品描述</text>
+          <textarea 
+            v-model="editForm.description" 
+            class="edit-textarea" 
+            placeholder="商品描述"
+          />
+		  <text class="label">商品链接</text>
+		  <textarea 
+		    v-model="editForm.salesUrl" 
+		    class="edit-input" 
+		    placeholder="商品链接"
+		  />
+          <view class="edit-buttons">
+            <button @click="saveChanges" class="save-btn">保存</button>
+            <button @click="cancelEdit" class="cancel-btn">取消</button>
+          </view>
+        </view>
+      </view>
+
+      <!-- 购买按钮 -->
+      <view class="product-footer">
+        <button class="buy-btn" @click="goToBuy">点击购买</button>
+      </view>
+    </view>
+  </view>
 </template>
+
 
 <script>
 export default {
   data() {
-    return {
-	  productId:null,
-      product: {} // 用于存储商品数据
-    };
-  },
-  onLoad(options) {
-	  console.log("接productId：", options.productId);
-    if (options.productId) {
-		console.log("接收到的 productId：", options.productId); // 打印接收到的字符串
-		this.getProductDetail(options.productId);
-	
-    }
+   return {
+         productId: null,
+         product: {},
+         isFromMyShop: false,
+         editMode: false,
+         typeList: [], // 商品类型列表
+         formData: {
+           title: '',
+           typeName: '',
+           description: '',
+           price: '',
+           salesUrl: ''
+         },
+		 tempFilePath: '', // 临时图片路径
+		 typeIndex: 0, // 选中的类型索引
+		 isSubmitting: false // 是否正在提交
+       };
+     },
+   
+     onLoad(options) {
+       this.productId = options.productId;
+	   console.log("来源为：",options.from)
+       // 判断来源页面
+       this.isFromMyShop = options.from === 'myShop';
+       this.getProductDetail(options.productId);
+       if (this.isFromMyShop) {
+         this.getTypeList();
+       }
+
   },
   methods: {
+  // 获取商品类型列表
+	  async getTypeList() {
+		try {
+		  const response = await fetch("http://localhost:8080/api/products/types");
+		  const result = await response.json();
+		   console.log("获取商品类型列表成功");
+		  this.typeList = result.data;
+		} catch (error) {
+		  console.error("获取商品类型失败:", error);
+		}
+	  },
+ // 切换编辑模式
+	toggleEditMode() {
+	  this.editMode = !this.editMode;
+	  if (this.editMode) {
+		// 初始化编辑表单
+		this.editForm = {
+		  title: this.product.title,
+		  price: this.product.price,
+		  typeName: this.product.typeName,
+		  description: this.product.description
+		};
+	  }
+	},
+
 	async getProductDetail(productId) {
 		console.log("prd",productId)
 		this.productId=productId
@@ -67,17 +176,81 @@ export default {
 		  })
 		}
 	},
+	
+// 处理类型选择
+	handleTypeChange(e) {
+	  const index = e.detail.value;
+	  this.editForm.typeName = this.typeList[index].typeName;
+	},
+	chooseImage() {
+	  uni.chooseImage({
+	    count: 1,
+	    sizeType: ['original', 'compressed'],
+	    sourceType: ['album', 'camera'],
+	    success: (res) => {
+	      uni.getImageInfo({
+	        src: res.tempFilePaths[0],
+	        success: (imageInfo) => {
+	          // 检查图片大小
+	          if (imageInfo.size > 5 * 1024 * 1024) {
+	            uni.showToast({
+	              title: '图片大小不能超过5MB',
+	              icon: 'none'
+	            })
+				(console.log("检查图片大小通过:",imageInfo.size))
+	            return
+	          }
+	          this.tempFilePath = res.tempFilePaths[0]
+	        },
+	        fail: () => {
+	          uni.showToast({
+	            title: '图片信息获取失败',
+	            icon: 'none'
+	          })
+	        }
+	      })
+	    }
+	  })
+	},
+	
+	
+	// 删除已选图片
+	deleteImage() {
+	  this.tempFilePath = ''
+	},
+// 保存修改
+	async saveChanges() {
+	  try {
+		const response = await fetch(`http://localhost:8080/api/products/${this.productId}/update`, {
+		  method: 'PUT',
+		  headers: {
+			'Content-Type': 'application/json'
+		  },
+		  body: JSON.stringify(this.editForm)
+		});
+
+		const result = await response.json();
+		if (result.success) {
+		  uni.showToast({
+			title: '更新成功',
+			icon: 'success'
+		  });
+		  this.editMode = false;
+		  this.getProductDetail(this.productId);
+		}
+	  } catch (error) {
+		console.error("更新商品失败:", error);
+		uni.showToast({
+		  title: '更新失败',
+		  icon: 'none'
+		});
+	  }
+	},
+// 取消编辑
+	cancelEdit() {
+	  this.editMode = false;
+	},
     goToBuy() {
-		// if (this.product.salesURL) {
-		// 	console.log("链接", this.product.salesURL);
-		// 	// 在 H5 环境下，直接跳转到外部链接
-		// 	window.location.href = this.product.salesURL;
-		//   } else {
-		// 	uni.showToast({
-		// 	  title: "暂无购买链接",
-		// 	  icon: "none"
-		// 	});
-		//   }
 		if (this.product.salesURL) {
 		    uni.navigateTo({
 		      url: `/pages/shop/SalePage/SalePage?url=${encodeURIComponent(this.product.salesURL)}`
@@ -97,7 +270,7 @@ export default {
 .container{
   display: flex;
   flex-direction: column;
-  height: 600px;
+
   background-color: #fffaf2;
 }
 .product-detail {
@@ -131,7 +304,18 @@ export default {
   gap: 8rpx; /* 图标和价格之间的间距 */
   margin: 10rpx 0;
 }
-
+.user-image {
+  width: 30px; /* 减小头像尺寸 */
+  height: 30px;
+  border-radius: 50%; /* 圆形头像 */
+  border: 2px solid; /* 边框宽度 */
+  object-fit: cover;
+}
+.user-name {
+  font-size: 14px;
+  color: #666;
+  font-weight: normal; 
+}
 .price-icon {
   width: 50rpx; /* 调整图标大小 */
   height: 50rpx;
@@ -162,8 +346,9 @@ export default {
   margin-bottom: 20rpx;
 }
 
-.source-name {
-  color: #ff6600;
+.type-name {
+  color: #a08383;
+  font-size: 24rpx;
 }
 
 .product-description {
@@ -190,4 +375,84 @@ export default {
   margin-top: auto; /* 按钮靠下对齐 */
   margin-left: 80px;
 }
+.edit-button {
+  position: relative;
+  left:150px;
+ width: 35%;
+ height: 80rpx;
+ line-height: 80rpx;
+ text-align: center;
+ border-radius: 10rpx;
+ font-size: 28rpx;
+ background-color: #8cd3b9;
+ margin-bottom: 10px;
+ color: #fff;
+}
+.edit-form {
+  width: 100%;
+  padding: 20rpx;
+}
+
+.edit-input {
+  width: 100%;
+  height: 80rpx;
+  margin-bottom: 20rpx;
+  padding: 0 20rpx;
+  background-color: #fff;
+  border-radius: 10rpx;
+}
+.edit-picker {
+  width: 100%;
+  height: 80rpx;
+  margin-bottom: 20rpx;
+  background-color: #fff;
+  border-radius: 10rpx;
+}
+
+.picker-text {
+  line-height: 80rpx;
+  padding: 0 20rpx;
+}
+
+.edit-textarea {
+  width: 100%;
+  height: 200rpx;
+  margin-bottom: 20rpx;
+  padding: 20rpx;
+  background-color: #fff;
+  border-radius: 10rpx;
+}
+
+.edit-buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 20rpx;
+}
+.save-btn, .cancel-btn {
+  width: 45%;
+  height: 80rpx;
+  line-height: 80rpx;
+  text-align: center;
+  border-radius: 10rpx;
+  font-size: 28rpx;
+  margin-bottom: 5px;
+}
+
+.save-btn {
+  background-color: #ff8f73;
+  color: #fff;
+}
+
+.cancel-btn {
+  background-color: #f5f5f5;
+  color: #666;
+}
+.label {
+  display: block;
+  margin-bottom: 10rpx;
+  color: #333;
+  font-size: 28rpx;
+}
+
 </style>
