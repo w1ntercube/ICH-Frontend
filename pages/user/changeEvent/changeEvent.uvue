@@ -5,23 +5,26 @@
       <text class="title-text">我的活动列表</text>
       <view class="divider"></view>
     </view>
-
-    <!-- 活动列表 -->
-    <view class="event-list">
-      <view 
-        v-for="event in events" 
-        :key="event.eventId" 
-        class="event-item" 
-        @click="openEditDialog(event)"
-      >
-        <image class="event-image" :src="event.imageUrl || '/static/images/default-event.png'"></image>
-        <view class="event-info">
-          <text class="event-title">{{ event.title }}</text>
-          <text class="event-location">{{ event.city }} {{ event.district }}</text>
-        </view>
-      </view>
-    </view>
-
+	
+	<!-- 活动列表 -->
+	<view class="event-list">
+	  <view 
+		v-for="event in events" 
+		:key="event.eventId" 
+		class="event-item" 
+		@click="openEditDialog(event.eventId)"
+	  >
+		<!-- 图片 -->
+		<image class="event-image" :src="event.imageUrl || '/static/images/default-event.png'"></image>
+		
+		<!-- 文本内容 -->
+		<view class="event-info">
+		  <text class="event-title">{{ event.title }}</text>
+		  <text class="event-location">{{ event.city + " " + event.district }}</text>
+		</view>
+	  </view>
+	</view>
+	
     <!-- 无活动提示 -->
     <view v-if="events.length === 0" class="no-events">
       <text>暂无活动</text>
@@ -162,18 +165,30 @@
 	      });
 	    },
 	
+	
+	
+	
 		// 打开编辑框并初始化活动数据
-		openEditDialog(event) {
+	  openEditDialog(eventId) {
+		// 根据活动 ID 查找活动数据
+		const selectedEvent = this.events.find((event) => event.eventId === eventId);
+		if (selectedEvent) {
+		  // 初始化编辑数据
 		  this.editEvent = {
-			...event,
-			statusIndex: this.statusOptions.indexOf(event.status), // 映射到索引
-			startDate: event.startTime ? event.startTime.split('T')[0] : '',
-			startTimeOnly: event.startTime ? event.startTime.split('T')[1].substring(0, 5) : '',
-			endDate: event.endTime ? event.endTime.split('T')[0] : '',
-			endTimeOnly: event.endTime ? event.endTime.split('T')[1].substring(0, 5) : '',
+			...selectedEvent, // 直接复制活动数据
+			startDate: selectedEvent.startTime ? selectedEvent.startTime.split('T')[0] : '', // 提取开始日期
+			startTimeOnly: selectedEvent.startTime ? selectedEvent.startTime.split('T')[1].substring(0, 5) : '', // 提取开始时间
+			endDate: selectedEvent.endTime ? selectedEvent.endTime.split('T')[0] : '', // 提取结束日期
+			endTimeOnly: selectedEvent.endTime ? selectedEvent.endTime.split('T')[1].substring(0, 5) : '', // 提取结束时间
+			statusIndex: this.statusOptions.indexOf(selectedEvent.status), // 将状态映射为索引
 		  };
+
+		  // 显示编辑弹框
 		  this.showEditDialog = true;
-		},
+		} else {
+		  console.error('未找到对应的活动数据，无法编辑');
+		}
+	  },
 			
 			
 		// 日期和时间选择处理
@@ -232,20 +247,32 @@
 		  }
 
 		  try {
+			// 拼接完整的时间
+			const startTime = `${this.editEvent.startDate}T${this.editEvent.startTimeOnly}:00`;
+			const endTime = `${this.editEvent.endDate}T${this.editEvent.endTimeOnly}:00`;
+				
+			console.log("准备提交的数据:", {
+				...this.editEvent,
+				startTime,
+				endTime,
+			});
+			
+			const statusMapping = {
+			  DRAFT: 0,
+			  PUBLISHED: 1,
+			  CANCELLED: 2,
+			};
+			// 将状态转换为对应的整型值
+			const status = statusMapping[this.editEvent.status];
 
 			const postResponse = await uni.request({
 			  url: `http://localhost:8080/api/events/updateEvent/${this.editEvent.eventId}`,
 			  method: 'PUT',
 			  data: {
-				title: this.editEvent.title,
-				description: this.editEvent.description,
-				startTime: this.editEvent.startTime,
-				endTime: this.editEvent.endTime,
-				location: this.editEvent.location,
-				province: this.editEvent.province,
-				city: this.editEvent.city,
-				district: this.editEvent.district,
-				status: this.editEvent.statusIndex,
+				...this.editEvent, // 复制编辑数据
+				startTime, // 替换为拼接的完整时间
+				endTime,   // 替换为拼接的完整时间
+				status,
 			  },
 			  header: {
 				'Content-Type': 'application/json',
@@ -343,39 +370,46 @@
 }
 
 .event-item {
-  display: flex;
+  display: flex; /* 使用flexbox布局 */
+  flex-direction: row; /* 水平方向排列 */
+  align-items: center; /* 垂直方向居中 */
   padding: 10px;
   margin-bottom: 10px;
-  background-color: #fff;
+  background-color: #ffffff;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
+  transition: transform 0.2s ease-in-out; /* 鼠标悬停时的动画 */
+}
+
+.event-item:hover {
+  transform: translateY(-3px); /* 鼠标悬停时轻微上移 */
 }
 
 .event-image {
   width: 80px;
   height: 80px;
   border-radius: 8px;
-  margin-right: 10px;
-  object-fit: cover;
+  object-fit: cover; /* 保持图片比例 */
+  margin-right: 10px; /* 图片和文字之间的间距 */
 }
 
 .event-info {
-  flex: 1;
+  flex: 1; /* 占据剩余空间 */
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  flex-direction: column; /* 垂直排列文字 */
+  justify-content: center; /* 垂直方向居中 */
 }
 
 .event-title {
   font-size: 16px;
   font-weight: bold;
   color: #333;
+  margin-bottom: 5px; /* 标题和位置之间的间距 */
 }
 
 .event-location {
   font-size: 14px;
   color: #666;
-  margin: 5px 0;
 }
 
 .no-events {
@@ -436,8 +470,7 @@ input,
 }
 
 .dialog-actions {
-  display: flex;
-  justify-content: space-between;
+  margin-top: 20px;
 }
 
 button {
