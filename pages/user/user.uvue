@@ -59,6 +59,7 @@ export default {
     return {
       defaultAvatar: 'https://example.com/default-avatar.jpg', // 默认头像 URL
       userInfo: {
+		userid:0,
         username: '',
         bio: '',
         profilePicture: null,
@@ -284,10 +285,11 @@ export default {
   
     // 跳转到指定页面
     goToPage(button) {
+      const userId = this.userInfo.userid;
       uni.navigateTo({
-        url: button.page,
+        url: `${button.page}?userId=${userId}`,
       });
-    }
+    },
   },
 
   mounted() {

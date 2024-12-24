@@ -1,26 +1,482 @@
 <template>
-	<!-- #ifdef APP -->
-	<scroll-view style="flex:1">
-	<!-- #endif -->
-		修改活动
-	<!-- #ifdef APP -->
-	</scroll-view>
-	<!-- #endif -->
+  <view class="container">
+    <!-- 页面标题 -->
+    <view class="section-header">
+      <text class="title-text">我的活动列表</text>
+      <view class="divider"></view>
+    </view>
+
+    <!-- 活动列表 -->
+    <view class="event-list">
+      <view 
+        v-for="event in events" 
+        :key="event.eventId" 
+        class="event-item" 
+        @click="openEditDialog(event)"
+      >
+        <image class="event-image" :src="event.imageUrl || '/static/images/default-event.png'"></image>
+        <view class="event-info">
+          <text class="event-title">{{ event.title }}</text>
+          <text class="event-location">{{ event.city }} {{ event.district }}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 无活动提示 -->
+    <view v-if="events.length === 0" class="no-events">
+      <text>暂无活动</text>
+    </view>
+
+    <!-- 编辑活动弹框 -->
+    <view v-if="showEditDialog" class="edit-dialog">
+	  <scroll-view class="dialog-content" scroll-y>
+        <text class="dialog-title">编辑活动</text>
+        
+        <!-- 活动标题 -->
+        <view class="input-group">
+          <text class="label">标题</text>
+          <input v-model="editEvent.title" placeholder="请输入活动标题" />
+        </view>
+
+        <!-- 活动描述 -->
+        <view class="input-group">
+          <text class="label">描述</text>
+          <textarea 
+            v-model="editEvent.description" 
+            placeholder="请输入活动描述" 
+            class="description-textarea">
+          </textarea>
+        </view>
+
+		<!-- 开始日期 -->
+		<view class="input-group">
+		  <text class="label">开始日期</text>
+		  <picker mode="date" v-model="editEvent.startDate" @change="onStartDateChange">
+			<view class="picker">{{ editEvent.startDate || '请选择日期' }}</view>
+		  </picker>
+		</view>
+		
+		<!-- 开始时间 -->
+		<view class="input-group">
+		  <text class="label">开始时间</text>
+		  <picker mode="time" v-model="editEvent.startTimeOnly" @change="onStartTimeChange">
+			<view class="picker">{{ editEvent.startTimeOnly || '请选择时间' }}</view>
+		  </picker>
+		</view>
+		
+		<!-- 结束日期 -->
+		<view class="input-group">
+		  <text class="label">结束日期</text>
+		  <picker mode="date" v-model="editEvent.endDate" @change="onEndDateChange">
+			<view class="picker">{{ editEvent.endDate || '请选择日期' }}</view>
+		  </picker>
+		</view>
+		
+		<!-- 结束时间 -->
+		<view class="input-group">
+		  <text class="label">结束时间</text>
+		  <picker mode="time" v-model="editEvent.endTimeOnly" @change="onEndTimeChange">
+			<view class="picker">{{ editEvent.endTimeOnly || '请选择时间' }}</view>
+		  </picker>
+		</view>
+		
+		<!-- 活动状态 -->
+		<view class="input-group">
+		  <text class="label">状态</text>
+		  <picker :range="statusOptions" v-model="editEvent.statusIndex" @change="updateStatus">
+			<view class="picker">{{ statusOptions[editEvent.statusIndex] || '请选择状态' }}</view>
+		  </picker>
+		</view>
+
+
+        <!-- 活动地点 -->
+        <view class="input-group">
+          <text class="label">地点</text>
+          <input v-model="editEvent.location" placeholder="请输入活动地点" />
+        </view>
+
+        <view class="input-group">
+          <text class="label">省</text>
+          <input v-model="editEvent.province" placeholder="请输入省份" />
+        </view>
+
+        <view class="input-group">
+          <text class="label">市</text>
+          <input v-model="editEvent.city" placeholder="请输入城市" />
+        </view>
+
+        <view class="input-group">
+          <text class="label">区</text>
+          <input v-model="editEvent.district" placeholder="请输入地区" />
+        </view>
+
+        <!-- 编辑弹框操作按钮 -->
+        <view class="dialog-actions">
+          <button @click="saveEditEvent">保存</button>
+          <button @click="closeEditDialog">取消</button>
+        </view>
+	  </scroll-view>
+    </view>
+  </view>
 </template>
+
 
 <script>
 	export default {
-		data() {
-			return {
-				
-			}
+	  data() {
+	    return {
+	      events: [], // 当前用户发布的活动列表
+	      userId: null, // 从上一层界面传递的用户ID
+	      showEditDialog: false, // 是否显示编辑活动弹框
+	      editEvent: {
+	        startDate: '', // 开始日期
+	        startTimeOnly: '', // 开始时间
+	        endDate: '', // 结束日期
+	        endTimeOnly: '', // 结束时间
+			statusIndex: null, // 状态索引
+	      }, // 当前正在编辑的活动信息
+	      statusOptions: ['未发布', '进行中', '已结束'], // 活动状态选项
+	    };
+	  },
+	  onLoad(options) {
+	    // 获取用户ID并加载活动列表
+	    this.userId = options.userId;
+	    this.fetchUserEvents();
+	  },
+	  methods: {
+	    // 获取用户活动列表
+	    fetchUserEvents() {
+	      const token = uni.getStorageSync('token');
+	      uni.request({
+	        url: `http://localhost:8080/api/events/user/${this.userId}/events`,
+	        method: 'GET',
+	        header: { 'Authorization': `Bearer ${token}` },
+	        success: (res) => {
+	          if (res.statusCode === 200) {
+	            this.events = res.data.data || [];
+	          } else {
+	            console.error('获取活动列表失败:', res.statusCode);
+	          }
+	        },
+	        fail: (err) => console.error('请求失败:', err),
+	      });
+	    },
+	
+		// 打开编辑框并初始化活动数据
+		openEditDialog(event) {
+		  this.editEvent = {
+			...event,
+			statusIndex: this.statusOptions.indexOf(event.status), // 映射到索引
+			startDate: event.startTime ? event.startTime.split('T')[0] : '',
+			startTimeOnly: event.startTime ? event.startTime.split('T')[1].substring(0, 5) : '',
+			endDate: event.endTime ? event.endTime.split('T')[0] : '',
+			endTimeOnly: event.endTime ? event.endTime.split('T')[1].substring(0, 5) : '',
+		  };
+		  this.showEditDialog = true;
 		},
-		methods: {
 			
-		}
-	}
+			
+		// 日期和时间选择处理
+		onStartDateChange(e) {
+		  this.editEvent.startDate = e.detail.value; // 更新开始日期
+		  this.updateStartDateTime();
+		},
+		onStartTimeChange(e) {
+		  this.editEvent.startTimeOnly = e.detail.value; // 更新开始时间
+		  this.updateStartDateTime();
+		},
+		onEndDateChange(e) {
+		  this.editEvent.endDate = e.detail.value; // 更新结束日期
+		  this.updateEndDateTime();
+		},
+		onEndTimeChange(e) {
+		  this.editEvent.endTimeOnly = e.detail.value; // 更新结束时间
+		  this.updateEndDateTime();
+		},
+	
+		updateStartDateTime() {
+		  if (this.editEvent.startDate && this.editEvent.startTimeOnly) {
+			this.editEvent.startTime = `${this.editEvent.startDate}T${this.editEvent.startTimeOnly}:00`;
+		  }
+		},
+
+		updateEndDateTime() {
+		  if (this.editEvent.endDate && this.editEvent.endTimeOnly) {
+			this.editEvent.endTime = `${this.editEvent.endDate}T${this.editEvent.endTimeOnly}:00`;
+		  }
+		},
+
+		// 更新状态
+		updateStatus(e) {
+		  this.editEvent.statusIndex = e.detail.value; // 更新状态索引
+		},
+		
+		saveEditEvent: async function () {
+		  const token = uni.getStorageSync('token');
+			console.log('前端获取的 token:', token);
+		  // 检查 token 和必填字段
+		  if (!token) {
+			uni.showToast({
+			  title: '请先登录',
+			  icon: 'none',
+			});
+			return;
+		  }
+
+		  if (!this.editEvent.title || !this.editEvent.startTime || !this.editEvent.endTime) {
+			uni.showToast({
+			  title: '请填写完整的活动信息',
+			  icon: 'none',
+			});
+			return;
+		  }
+
+		  try {
+
+			const postResponse = await uni.request({
+			  url: `http://localhost:8080/api/events/updateEvent/${this.editEvent.eventId}`,
+			  method: 'PUT',
+			  data: {
+				title: this.editEvent.title,
+				description: this.editEvent.description,
+				startTime: this.editEvent.startTime,
+				endTime: this.editEvent.endTime,
+				location: this.editEvent.location,
+				province: this.editEvent.province,
+				city: this.editEvent.city,
+				district: this.editEvent.district,
+				status: this.editEvent.statusIndex,
+			  },
+			  header: {
+				'Content-Type': 'application/json',
+				Authorization: `${token}`,
+			  },
+			  success: (res) => {
+				if (res.statusCode === 200) {
+				  const responseData = res.data;
+
+				  if (responseData.message === 'Event updated successfully') {
+					uni.showToast({
+					  title: '活动修改成功',
+					  icon: 'success',
+					});
+
+					// 打印后端返回的数据
+					console.log('修改成功的活动数据:', responseData.data);
+
+					// 刷新活动列表并关闭编辑弹框
+					this.fetchUserEvents();
+					this.showEditDialog = false;
+				  } else {
+					uni.showToast({
+					  title: `保存失败: ${responseData.message || '未知错误'}`,
+					  icon: 'none',
+					});
+					console.error('后端返回错误信息:', responseData);
+				  }
+				} else {
+				  uni.showToast({
+					title: `保存失败，状态码: ${res.statusCode}`,
+					icon: 'none',
+				  });
+				  console.error('请求失败，状态码:', res.statusCode, '响应内容:', res.data);
+				}
+			  },
+			  fail: (err) => {
+				uni.showToast({
+				  title: '服务器未响应，请稍后再试',
+				  icon: 'none',
+				});
+				console.error('请求失败:', err);
+			  },
+			});
+		  } catch (error) {
+			console.error('提交失败:', error);
+			uni.showToast({
+			  title: '提交失败，请稍后再试',
+			  icon: 'none',
+			});
+		  }
+		},
+
+
+	    // 关闭编辑弹框
+	    closeEditDialog() {
+	      this.showEditDialog = false;
+	    },
+	  },
+	};
+
 </script>
 
 <style>
+	
+.container {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  padding: 10px;
+  background-color: #fffaf2;
+}
+
+.section-header {
+  margin-top: 20px;
+}
+
+.title-text {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8px;
+  margin-left: 15px;
+}
+
+.divider {
+  height: 3px;
+  margin: 0 auto;
+  background-color: #934e3d;
+  width: 90%;
+}
+
+.event-list {
+  margin-top: 20px;
+}
+
+.event-item {
+  display: flex;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.event-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  margin-right: 10px;
+  object-fit: cover;
+}
+
+.event-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.event-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+.event-location {
+  font-size: 14px;
+  color: #666;
+  margin: 5px 0;
+}
+
+.no-events {
+  text-align: center;
+  font-size: 16px;
+  color: #999;
+  margin-top: 20px;
+}
+
+
+
+.edit-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dialog-content {
+  width: 90%;
+  max-height: 100%; /* 限制弹框最大高度 */
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  overflow-y: scroll; /* 启用滚动 */
+}
+
+.dialog-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.input-group {
+  margin-bottom: 15px;
+}
+
+.label {
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+textarea,
+input,
+.picker {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+button {
+  flex: 1;
+  margin: 0 5px;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+button:nth-child(2) {
+  background-color: #ccc;
+}
+
+.description-textarea {
+  width: 100%;
+  height: 40px; /* 限制高度为 80px */
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  resize: none; /* 禁止用户调整大小 */
+  overflow-y: auto; /* 超出范围时显示滚动条 */
+  font-size: 14px;
+  line-height: 1.5;
+}
+.picker {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  text-align: left;
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 10px;
+}
 
 </style>
