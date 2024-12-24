@@ -4,10 +4,9 @@
       <!-- 用户头像 -->
       <image class="avatar" :src="userInfo.profilePicture || defaultAvatar" alt="头像" @click="uploadAvatar" />
       
-      <!-- 右上角的用户名和身份 -->
+      <!-- 用户名和身份 -->
       <view class="user-details">
         <view class="username">
-          <!-- 当不在编辑状态时显示用户名，当编辑时显示输入框 -->
           <text v-if="!isEditingUsername" @click="editUsername">{{ userInfo.username }}</text>
           <input
             v-if="isEditingUsername"
@@ -19,7 +18,7 @@
             placeholder="请输入新用户名"
           />
         </view>
-        <view class="role">{{ displayRole }}</view> <!-- 使用计算属性来动态显示角色 -->
+        <view class="role">{{ displayRole }}</view>
       </view>
       
       <!-- 用户简介 -->
@@ -40,10 +39,10 @@
 
     <view class="button-container">
       <button class="action-button" v-for="(button, index) in buttons" :key="index" @click="goToPage(button)">
-        <text>{{ button.name }}</text>  <!-- 确保这里是 button.name -->
+        <text>{{ button.name }}</text>
         <image src="/static/images/详情.png" alt="详情图标" class="button-icon" />
       </button>
-	  <!-- 退出登录按钮 -->
+	  
 	    <button class="action-button" @click="logout">
 	      <text>退出登录</text>
 		  <image src="/static/images/详情.png" alt="详情图标" class="button-icon" />
@@ -63,12 +62,12 @@ export default {
         username: '',
         bio: '',
         profilePicture: null,
-        role: '', // 用户身份
+        role: '',
       },
-      isEditingUsername: false, // 是否在编辑用户名
-      isEditingBio: false, // 是否在编辑简介
-      newUsername: '', // 存储修改后的用户名
-      newBio: '', // 存储修改后的简介
+      isEditingUsername: false,
+      isEditingBio: false,
+      newUsername: '',
+      newBio: '',
       allButtons: [
               { name: '我点赞的帖子', page: '/pages/user/likePost/likePost' },
               { name: '我收藏的帖子', page: '/pages/user/favouritePost/favouritePost' },
@@ -78,7 +77,7 @@ export default {
               { name: '发布活动', page: '/pages/user/publishEvent/publishEvent' },
               { name: '修改活动', page: '/pages/user/changeEvent/changeEvent' },
               { name: '删除活动', page: '/pages/user/deleteEvent/deleteEvent' }
-            ], // 所有按钮及其页面
+            ],
       buttons: [], // 当前显示的按钮
     };
   },
@@ -86,10 +85,10 @@ export default {
     // 根据 role 显示不同的按钮数量
     displayRole() {
       if (this.userInfo.role === 'ADMIN') {
-        this.buttons = this.allButtons; // 显示所有按钮
+        this.buttons = this.allButtons;
         return '管理员';
       } else if (this.userInfo.role === 'APPRAISER') {
-        this.buttons = this.allButtons; // 显示所有按钮
+        this.buttons = this.allButtons;
         return '非遗传承人';
       } else {
         this.buttons = this.allButtons.slice(0, 3); // 只显示前3个按钮
@@ -98,27 +97,27 @@ export default {
     }
   },
   methods: {
-	  logout() {
-	      // 清除本地存储中的 token
-	      uni.removeStorageSync('token');
-	      // 跳转到登录页（你可以根据需要修改这个页面的路径）
-	      uni.navigateTo({
-	        url: '/pages/login/login',  // 跳转到登录页面
-	      });
-		  },
+	//退出登录
+	logout() {
+		uni.removeStorageSync('token');
+	    uni.navigateTo({
+			url: '/pages/login/login',
+	    });
+	},
+	
     // 获取用户信息
     getUserInfo() {
-      const token = uni.getStorageSync('token'); // 从本地存储获取 token
+      const token = uni.getStorageSync('token');
       uni.request({
         url: 'http://localhost:8080/api/user/getInfo',
         method: 'GET',
         header: {
           'Content-Type': 'application/json',
-          'Authorization': `${token}`, // 添加 Authorization
+          'Authorization': `${token}`,
         },
         success: (res) => {
           if (res.statusCode === 200) {
-            this.userInfo = res.data.data; // 更新用户信息
+            this.userInfo = res.data.data;
           } else {
             console.error('请求失败，状态码:', res.statusCode);
           }
@@ -132,10 +131,10 @@ export default {
     // 上传头像
     uploadAvatar() {
       uni.chooseImage({
-        count: 1, // 选择一张图片
+        count: 1,
         success: (res) => {
-          const tempFilePath = res.tempFilePaths[0]; // 获取选中的图片路径
-          this.uploadFileToServer(tempFilePath); // 上传文件
+          const tempFilePath = res.tempFilePaths[0];
+          this.uploadFileToServer(tempFilePath);
         },
         fail: (err) => {
           console.error('选择图片失败:', err);
@@ -145,24 +144,23 @@ export default {
     
     // 上传文件到服务器
     uploadFileToServer(filePath) {
-      const token = uni.getStorageSync('token'); // 获取 token
+      const token = uni.getStorageSync('token');
       uni.uploadFile({
-        url: 'http://localhost:8080/api/user/uploadPicture', // 上传头像接口
-        filePath: filePath, // 传递选中的图片路径
-        name: 'image', // 这里传递字段名为 image
+        url: 'http://localhost:8080/api/user/uploadPicture',
+        filePath: filePath,
+        name: 'image',
         header: {
-          'Authorization': `${token}`, // 添加 Authorization
+          'Authorization': `${token}`,
         },
         success: (res) => {
           if (res.statusCode === 200) {
             let response;
             try {
-              response = JSON.parse(res.data); // 假设服务器返回 JSON 格式
+              response = JSON.parse(res.data);
               uni.showToast({
                 title: '头像上传成功',
                 icon: 'success',
               });
-              // 更新用户头像
               this.userInfo.profilePicture = response.data.profilePicture;
             } catch (e) {
               console.error('解析响应失败:', e);
@@ -180,108 +178,108 @@ export default {
           }
         },
         fail: (err) => {
-          console.error('请求失败:', err);
-          uni.showToast({
-            title: '请求失败，请重试',
-            icon: 'none',
-          });
+			console.error('请求失败:', err);
+			uni.showToast({
+				title: '请求失败，请重试',
+				icon: 'none',
+			});
         }
       });
     },
   
     // 编辑用户名
     editUsername() {
-      this.isEditingUsername = true;
-      this.newUsername = this.userInfo.username; // 初始化输入框内容为当前用户名
+		this.isEditingUsername = true;
+		this.newUsername = this.userInfo.username;
     },
   
     // 保存修改后的用户名
     saveUsername() {
-      const token = uni.getStorageSync('token'); // 获取 token
-      if (this.newUsername === this.userInfo.username) {
-        this.isEditingUsername = false; // 如果没有更改，退出编辑模式
-        return;
-      }
+		const token = uni.getStorageSync('token');
+		if (this.newUsername === this.userInfo.username) {
+			this.isEditingUsername = false;
+			return;
+		}
   
-      // 请求更新用户名
-      uni.request({
-        url: 'http://localhost:8080/api/user/updateInfo',
-        method: 'PUT',
-        header: {
-          'Content-Type': 'application/json',
-          'Authorization': `${token}`,
-        },
-        data: {
-          username: this.newUsername,
-        },
-        success: (res) => {
-          if (res.statusCode === 200) {
-            // 如果更新成功，更新本地用户名并退出编辑状态
-            this.userInfo.username = this.newUsername;
-            this.isEditingUsername = false;
-          } else {
-            console.error('更新用户名失败:', res.statusCode);
-            uni.showToast({
-              title: '更新失败，请重试',
-              icon: 'none',
-            });
-          }
-        },
-        fail: (err) => {
-          console.error('请求失败:', err);
-          uni.showToast({
-            title: '请求失败，请重试',
-            icon: 'none',
-          });
-        },
-      });
+		// 请求更新用户名
+		uni.request({
+			url: 'http://localhost:8080/api/user/updateInfo',
+			method: 'PUT',
+			header: {
+				'Content-Type': 'application/json',
+				'Authorization': `${token}`,
+			},
+			data: {
+				username: this.newUsername,
+			},
+			success: (res) => {
+				if (res.statusCode === 200) {
+					// 如果更新成功，更新本地用户名并退出编辑状态
+					this.userInfo.username = this.newUsername;
+					this.isEditingUsername = false;
+				} else {
+					console.error('更新用户名失败:', res.statusCode);
+					uni.showToast({
+						title: '更新失败，请重试',
+						icon: 'none',
+					});
+				}
+			},
+			fail: (err) => {
+				console.error('请求失败:', err);
+				uni.showToast({
+					title: '请求失败，请重试',
+					icon: 'none',
+				});
+			},
+		});
     },
   
     // 进入编辑简介模式
     enterEditBio() {
-      this.isEditingBio = true;
-      this.newBio = this.userInfo.bio || ''; // 初始化简介为当前简介
+		this.isEditingBio = true;
+		this.newBio = this.userInfo.bio || '';
     },
   
     // 保存修改后的简介
     saveBio() {
-      const token = uni.getStorageSync('token'); // 获取 token
-      if (this.newBio === this.userInfo.bio) {
-        this.isEditingBio = false; // 如果没有更改，退出编辑模式
-        return;
-      }
+		const token = uni.getStorageSync('token');
+		if (this.newBio === this.userInfo.bio) {
+			this.isEditingBio = false;
+			return;
+		}
   
-      // 请求更新简介
-      uni.request({
-        url: 'http://localhost:8080/api/user/updateInfo',
-        method: 'PUT',
-        header: {
-          'Content-Type': 'application/json',
-          'Authorization': `${token}`,
-        },
-        data: {
-          bio: this.newBio,
-        },
+		// 请求更新简介
+		uni.request({
+			url: 'http://localhost:8080/api/user/updateInfo',
+			method: 'PUT',
+			header: {
+				'Content-Type': 'application/json',
+				'Authorization': `${token}`,
+			},
+			data: {
+				bio: this.newBio,
+			},
         success: (res) => {
-          if (res.statusCode === 200) {
-            this.userInfo.bio = this.newBio; // 更新本地简介
-            this.isEditingBio = false; // 退出编辑状态
-          } else {
-            console.error('更新简介失败:', res.statusCode);
-            uni.showToast({
-              title: '更新失败，请重试',
-              icon: 'none',
-            });
-          }
+			if (res.statusCode === 200) {
+				this.userInfo.bio = this.newBio;
+				this.isEditingBio = false;
+			} else {
+				console.error('更新简介失败:', res.statusCode);
+				uni.showToast({
+					title: '更新失败，请重试',
+					icon: 'none',
+				});
+			}
         },
         fail: (err) => {
-          console.error('请求失败:', err);
-          uni.showToast({
-            title: '请求失败，请重试',
-            icon: 'none',
-          });
-        },
-      });
+			console.error('请求失败:', err);
+			uni.showToast({
+				title: '请求失败，请重试',
+				icon: 'none',
+			});
+			},
+		});
     },
   
     // 跳转到指定页面
@@ -296,6 +294,7 @@ export default {
   mounted() {
     this.getUserInfo(); // 组件加载时获取用户信息
   },
+  
   onShow() {
       this.getUserInfo(); // 每次页面重新显示时重新获取用户信息
     }
@@ -304,7 +303,6 @@ export default {
 
 
 <style>
-/* 背景色全屏 */
 .container {
   display: flex;
   flex-direction: column;
@@ -314,7 +312,6 @@ export default {
   width: 100%;
 }
 
-/* 用户信息框 */
 .user-info {
   display: flex;
   flex-direction: column;
@@ -329,7 +326,6 @@ export default {
   margin-top: 0px;
 }
 
-/* 头像样式 */
 .avatar {
   width: 60px;
   height: 60px;
@@ -340,38 +336,34 @@ export default {
   left: 15px;
 }
 
-/* 用户信息右侧 */
 .user-details {
   display: flex;
   flex-direction: column;
-  align-items: flex-start; /* 将用户信息垂直对齐 */
-  margin-left: 70px; /* 适当调整右侧的间距，使头像与用户名之间有空隙 */
-  text-align: left; /* 确保文本左对齐 */
+  align-items: flex-start;
+  margin-left: 70px;
+  text-align: left;
 }
 
-/* 用户名容器 */
 .username {
   font-size: 13px;
   color: #333;
   font-weight: bold;
-  display: flex;            /* 使用户名和编辑按钮水平排列 */
-  align-items: center;      /* 垂直居中对齐 */
-  justify-content: flex-start; /* 在左侧对齐 */
-  width: 100%;              /* 确保它占满整行 */
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
   margin-bottom: 5px;
 }
 
-/* 输入框样式 */
 .edit-input {
   font-size: 14px;
   padding: 5px;
   width: 120px;
   border-radius: 5px;
   border: 1px solid #ccc;
-  margin-left: 0px; /* 给输入框添加左边距，使其与原用户名有间隔 */
+  margin-left: 0px;
 }
 
-/* 用户角色样式 */
 .role {
   font-size: 10px;
   color: #333;
@@ -384,35 +376,31 @@ export default {
   text-align: center;
 }
 
-/* 用户简介容器样式 */
 .bio-container {
   margin-top: 10px;
-  width: 100%; /* 占满整个宽度 */
+  width: 100%;
 }
 
-/* 用户简介文本样式 */
 .bio {
-  font-size: 10px; /* 更小的字体 */
+  font-size: 10px;
   color: #666;
-  text-align: left; /* 改为左对齐 */
+  text-align: left;
   padding: 0px;
-  line-height: 1; /* 增加行高，使文本不拥挤 */
+  line-height: 1;
 }
 
-/* 白色方块样式 */
 .white-box {
   background-color: #fff;
   width: 100%;
-  height: 60px; /* 高度可以根据需要调整 */
+  height: 60px;
   border-radius: 5px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  margin-top: 5px; /* 上方留空 */
+  margin-top: 5px;
   display: flex;
   justify-content: center;
-  align-items: center; /* 居中显示简介 */
+  align-items: center;
 }
 
-/* 简介输入框 */
 .bio-input {
   width: 100%;
   height: 70px;
@@ -426,7 +414,6 @@ export default {
   outline: none;
 }
 
-/* 按钮容器 */
 .button-container {
   display: flex;
   flex-direction: column;
@@ -436,7 +423,6 @@ export default {
   padding-bottom: 15px;
 }
 
-/* 单个按钮样式 */
 .action-button {
   background: rgb(255, 250, 242);
   border: none;
@@ -449,33 +435,29 @@ export default {
   margin-bottom: 5px;
   width: 100%;
   display: flex;
-  align-items: center; /* 垂直居中对齐文本和图标 */
-  justify-content: space-between; /* 使按钮文本和图标有间隔 */
+  align-items: center;
+  justify-content: space-between;
   align-items: center;
   transition: background 0.1s ease;
 }
 
-/* 按钮被点击时的效果 */
 .action-button:active {
-  background: rgb(210, 190, 180); /* 点击时按钮颜色变化 */
+  background: rgb(210, 190, 180);
 }
 
-/* 按钮恢复到默认颜色 */
 .action-button:not(:active) {
-  transition: background 0.1s ease; /* 按钮恢复颜色的过渡效果 */
-}
-/* 如果希望文本更居中 */
-.action-button text {
-  margin-left: 10px; /* 为文本添加适当的左边距 */
-  margin-right: 10px; /* 为文本添加适当的右边距 */
-  text-align: center; /* 确保文本居中 */
+  transition: background 0.1s ease;
 }
 
-/* 图标样式 */
+.action-button text {
+  margin-left: 30px;
+  margin-right: 10px;
+  text-align: center;
+}
+
 .button-icon {
   width: 20px;
   height: 20px;
-  margin-left: 5px; /* 图标和文字之间的间距 */
+  margin-left: 5px;
 }
-
 </style>

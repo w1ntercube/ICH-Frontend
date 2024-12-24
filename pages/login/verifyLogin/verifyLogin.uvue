@@ -1,7 +1,6 @@
 <template>
   <view class="register-container">
     <view class="form">
-      <!-- 手机号输入 -->
       <view class="input-group">
         <text class="label">手机号</text>
         <input 
@@ -13,7 +12,6 @@
         <button @click="getCode" class="code-button">获取验证码</button>
       </view>
       
-      <!-- 验证码输入 -->
       <view class="input-group">
         <text class="label">验证码</text>
         <input 
@@ -24,10 +22,8 @@
         />
       </view>
     
-      <!-- 登录按钮 -->
       <button @click="load" class="load-button" :disabled="isLoading">登录</button>
 
-      <!-- 错误信息提示 -->
       <view v-if="errorMessage" class="error-message">
         {{ errorMessage }}
       </view>
@@ -39,26 +35,24 @@
 export default {
   data() {
     return {
-      phone: '',      // 手机号
-      code: '',       // 验证码
-      errorMessage: '', // 错误信息
-      isLoading: false, // 加载状态
+      phone: '',
+      code: '',
+      errorMessage: '',
+      isLoading: false,
     };
   },
   methods: {
-    // 获取验证码
     getCode() {
       if (!this.phone) {
         this.errorMessage = '请输入手机号';
         return;
       }
 
-      // 调用发送验证码接口
       uni.request({
-        url: 'http://localhost:8080/api/sms/sendCode', // 修改为发送验证码接口
+        url: 'http://localhost:8080/api/sms/sendCode',
         method: 'POST',
         data: {
-          phone: this.phone,  // 请求参数为手机号
+          phone: this.phone,
         },
         success: (response) => {
           if (response.statusCode === 200) {
@@ -83,23 +77,20 @@ export default {
       }
 
       return new Promise((resolve, reject) => {
-        // 调用验证验证码接口
         uni.request({
           url: 'http://localhost:8080/api/auth/loginByCode',
           method: 'POST',
           data: {
             phone: this.phone,  
-            code: this.code // 输入的验证码
+            code: this.code
           },
           success: (response) => {
             if (response.statusCode === 200) {
-              // 登录成功后返回 token
-              const responseData = response.data; // 直接获取响应数据
+              const responseData = response.data;
               if (responseData) {
-                // 如果返回的 data 中包含 token，说明登录成功
                 const token = responseData.data.token;
-                const tokenWithBearer = 'Bearer ' + token; // 在 token 前面加上 "Bearer " 字符串
-                uni.setStorageSync('token', tokenWithBearer); // 使用 sync 版本存储 token
+                const tokenWithBearer = 'Bearer ' + token;
+                uni.setStorageSync('token', tokenWithBearer);
                 console.log('Token stored:', tokenWithBearer);
 				resolve(true);
               } else {
@@ -136,9 +127,8 @@ export default {
         return;
       }
 
-      // 验证通过后跳转到主页
       uni.switchTab({
-        url: '/pages/home/home', // 注册成功后跳转到主页
+        url: '/pages/home/home',
       });
 
       // 重置加载状态
@@ -167,7 +157,7 @@ export default {
 }
 
 .input-group {
-  margin-bottom: 10px; /* 调整上下间距 */
+  margin-bottom: 10px;
 }
 
 .label {
@@ -178,26 +168,25 @@ export default {
 
 .input-field {
   width: 100%;
-  padding: 8px; /* 调整输入框的上下内边距 */
+  padding: 8px;
   border: 1px solid #ddd;
   border-radius: 4px;
 }
 
 .load-button {
-  width: 100%; /* 按钮宽度 */
+  width: 100%;
   padding: 10px;
   background-color: rgb(238, 225, 215);
   color: black;
   margin-top: 10px;
   border: none;
   border-radius: 4px;
-  font-size: 14px; /* 更小的字体 */
+  font-size: 14px;
   cursor: pointer;
-  height: 30px; /* 调整按钮高度 */
-  
-  display: flex; /* 启用 Flexbox */
-  justify-content: center; /* 水平居中 */
-  align-items: center; /* 垂直居中 */
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .load-button:disabled {
@@ -205,20 +194,19 @@ export default {
 }
 
 .code-button {
-  width: 100%; /* 按钮宽度 */
+  width: 100%;
   padding: 10px;
   background-color: rgb(238, 225, 215);
   color: black;
   margin-top: 10px;
   border: none;
   border-radius: 4px;
-  font-size: 14px; /* 更小的字体 */
+  font-size: 14px;
   cursor: pointer;
-  height: 30px; /* 调整按钮高度 */
-  
-  display: flex; /* 启用 Flexbox */
-  justify-content: center; /* 水平居中 */
-  align-items: center; /* 垂直居中 */
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .error-message {
