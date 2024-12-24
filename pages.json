@@ -125,13 +125,6 @@
 		}
 	},
 	{
-		"path" : "pages/user/deleteEvent/deleteEvent",
-		"style" : 
-		{
-			"navigationBarTitleText" : "删除活动"
-		}
-	},
-	{
 		"path" : "pages/user/changeEvent/changeEvent",
 		"style" : 
 		{

@@ -76,7 +76,6 @@ export default {
 			  { name: '我的橱窗', page: '/pages/user/myShop/myShop' },
               { name: '发布活动', page: '/pages/user/publishEvent/publishEvent' },
               { name: '修改活动', page: '/pages/user/changeEvent/changeEvent' },
-              { name: '删除活动', page: '/pages/user/deleteEvent/deleteEvent' }
             ],
       buttons: [], // 当前显示的按钮
     };
