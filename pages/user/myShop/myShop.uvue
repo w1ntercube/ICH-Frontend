@@ -1,26 +1,324 @@
 <template>
-	<!-- #ifdef APP -->
-	<scroll-view style="flex:1">
-	<!-- #endif -->
-		
-	<!-- #ifdef APP -->
+  <view class="shop-container">
+	    
+	<!-- 商品列表 -->
+	<scroll-view 
+	  class="product-list" 
+	  scroll-y 
+	>
+	  <view 
+	    v-for="product in products" 
+	    :key="product.productId" 
+	    class="product-card"
+	  >
+	    <image 
+	      :src="product.imageURL || '/static/images/商品图1.png'" 
+	      class="product-image" 
+	      mode="aspectFill"
+	    />
+	    <view class="product-info">
+	      <text class="product-title">{{ product.title }}</text>
+	      <view class="price-container">
+	          <image 
+	            src="/static/images/price.png" 
+	            class="price-icon" 
+	            mode="aspectFit"
+	          />
+	          <text class="product-price">{{ product.price.toFixed(2) }}</text>
+	        </view>
+	      <button 
+	        class="detail-btn" 
+	        @click="goToDetail(product.productId)"
+	      >查看详情</button>
+		  <button
+		    class="delete-btn" 
+		    @click="deleteProduct(product.productId)"
+		  >删除商品</button>
+	    </view>
+	  </view>
 	</scroll-view>
-	<!-- #endif -->
+  </view>
 </template>
 
 <script>
-	export default {
-		data() {
-			return {
-				
-			}
-		},
-		methods: {
-			
-		}
+import { toRaw } from 'vue';
+export default {
+  data() {
+    return {
+      products: [], // 商品列表
+      loading: false, // 是否正在加载
+    }
+  },
+  
+  onLoad() {
+	  this.getProducts()
+  },
+  
+  methods: {
+	  
+    
+    // 获取商品列表
+    async getProducts() {
+      if (this.loading) return
+      this.loading = true
+      try {
+        const token = uni.getStorageSync('token')
+        console.log("获取的token",token)
+        const response = await fetch("http://localhost:8080/api/products/byUser", {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+
+        })
+        
+        let result = await response.json()
+        
+		result=toRaw(result)
+		console.log("获取商品成功:", result)
+        if (result.data && result.data.productList) {
+            // 首次加载或切换分类
+            this.products = result.data.productList
+        }
+		this.products=toRaw(this.products)
+		console.log(this.products)
+      } catch (error) {
+        console.error("获取商品列表失败:", error)
+        uni.showToast({
+          title: '获取商品列表失败',
+          icon: 'none'
+        })
+      } finally {
+        this.loading = false
+      }
+    },
+   async deleteProduct(productId) {
+     uni.showModal({
+       title: '确认删除',
+       content: '确定要删除这个商品吗？',
+       success: async (res) => {
+         if (res.confirm) {
+           try {
+             const token = uni.getStorageSync('token');
+             const response = await fetch(`http://localhost:8080/api/products/${productId}/delete`, {
+               method: 'DELETE',
+               headers: {
+                 'Authorization': `Bearer ${token}`
+               }
+             });
+   
+             const result = await response.json();
+             
+             // 根据后端返回的 ResponseDTO 格式判断
+             if (result.message === "删除商品成功") { // 使用 message 判断是否成功
+               uni.showToast({
+                 title: '删除成功',
+                 icon: 'success'
+               });
+               
+               // 从列表中移除被删除的商品
+               this.products = this.products.filter(product => product.productId !== productId);
+             } else {
+               throw new Error(result.message || '删除失败');
+             }
+           } catch (error) {
+             console.error("删除商品失败:", error);
+             uni.showToast({
+               title: error.message || '删除失败',
+               icon: 'none'
+             });
+           }
+         }
+       }
+     });
+   },
+
+    // 跳转到商品详情页
+    goToDetail(productId) {
+		console.log("ID:",productId)
+		uni.navigateTo({ 
+			url: `/pages/shop/ProductDetail/ProductDetail?productId=${productId}&from=myShop`
+       })
+    },
+	goToPage(page) {
+	  uni.navigateTo({
+	    url: `/pages/${page}/${page}`
+	  });
 	}
+  }
+}
 </script>
 
 <style>
+.shop-container {
+  display: flex;
+  flex-direction: column;
+  background-color: #fffaf2;
+  overflow: hidden; /* 禁用外层容器的滚动 */
+  
+}
+
+.content {
+	display: flex; /* 使用flex布局进行横向排列 */
+    padding: 10rpx;
+    flex-wrap: nowrap; /* 防止子元素换行 */
+}
+
+.type-list {
+  display: flex;
+  flex-direction: row; /* 横向排列 */
+  height: 40px; /* 设置分类列表的高度 */
+  background-color: #fff;
+  border-bottom: 1rpx solid #eee;
+  border-radius:10px;
+}
+
+.type-item {
+	display: inline-block;
+    padding: 17rpx 20rpx;
+    margin: 0 0rpx;
+    font-size: 28rpx;
+    color: #ffffff;
+	background-color: #e49e87;
+    border-radius: 0rpx;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+.type-item.active {
+  background-color: #fffaf2;
+  color: #ae735d;
+}
+
+/* 搜索框相关样式 */
+.search-container {
+  display: flex;
+  flex-direction: row;
+  padding: 10rpx;
+  background-color: #fff;
+  border-radius:10px;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.search-box {
+  flex: 1;
+  flex-direction: row;
+  height: 70rpx;
+  background-color: #ffffff;
+  border-radius: 35rpx;
+  display: flex;
+  align-items: center;
+  padding: 0 20rpx;
+}
+
+.search-icon {
+  width: 40rpx;
+  height: 40rpx;
+  margin-right: 10rpx;
+}
+.search-input {
+  flex: 1;
+  height: 100%;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.search-btn {
+  width: 120rpx;
+  height: 70rpx;
+  line-height: 70rpx;
+  background-color: #e49e87;
+  color: #fff;
+  font-size: 28rpx;
+  border-radius: 25rpx;
+  padding: 0;
+  margin: 0;
+}
+
+.product-list {
+  padding: 15px;
+}
+
+.product-card {
+  display: flex; /* 使用flex布局 */
+  flex-direction: row; /* 横向排列 */
+  background-color: #fff;
+  margin-bottom: 15px;
+  border-radius: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  padding: 10px;
+}
+
+.product-image {
+  flex: 0.6;
+  height: 160px; /* 固定图片高度 */
+  width: auto; /* 固定图片宽度 */
+  border-radius: 20px;  
+}
+
+.product-info {
+  flex: 0.4; /* 占据剩余空间 */
+  padding: 10px;
+  display: flex;
+  flex-direction: column; /* 纵向排列信息 */
+  justify-content: space-between; /* 垂直均匀分布 */
+}
+
+.product-title {
+	color:#ff8f73;
+  font-size: 16px;
+  font-weight:550;
+  margin-bottom: 8px;
+  /* 文本超出显示省略号 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.price-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center; /* 垂直居中对齐 */
+  gap: 8rpx; /* 图标和价格之间的间距 */
+  margin: 10rpx 0;
+}
+
+.price-icon {
+  width: 50rpx; /* 调整图标大小 */
+  height: 50rpx;
+}
+
+.product-price {
+  font-size: 32rpx;
+  color: #ff4400;
+  font-weight: bold;
+  }
+
+.detail-btn {
+  background-color: #ff8f73;
+  color: white;
+  font-size: 14px;
+  padding: 2px 5px;
+  border-radius: 10px;
+  border: none;
+  height:40px;
+  width: auto; /* 按钮宽度自适应 */
+  margin-top: auto; /* 按钮靠下对齐 */
+}
+
+.delete-btn {
+  background-color: #c93604;
+  color: white;
+  font-size: 14px;
+  padding: 2px 5px;
+  border-radius: 10px;
+  border: none;
+  height:40px;
+  width: auto; /* 按钮宽度自适应 */
+  margin-top: 5px; /* 按钮靠下对齐 */
+}
 
 </style>

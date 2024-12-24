@@ -47,27 +47,50 @@ export default {
         this.errorMessage = '请输入手机号';
         return;
       }
+	  // 先检查手机号是否已注册
+	    uni.request({
+	      url: 'http://localhost:8080/api/auth/verifyPhone',
+	      method: 'POST',
+	      data: {
+	        phone: this.phone,
+	      },
+	      success: (response) => {
+	        if (response.statusCode === 200) {
+	          console.log("手机号不存在，请先注册");
+			  this.errorMessage = '手机号不存在，请先注册';
+	        } else {
+			   this.sendVerificationCode();
+	        }
+	      },
+	      fail: (error) => {
+	        this.errorMessage = '网络错误，请重试';
+	        console.error("检查手机号失败", error);
+	      }
+	    });
+	  },
 
-      uni.request({
-        url: 'http://localhost:8080/api/sms/sendCode',
-        method: 'POST',
-        data: {
-          phone: this.phone,
-        },
-        success: (response) => {
-          if (response.statusCode === 200) {
-            console.log("验证码发送成功");
-            this.errorMessage = '验证码已发送，请查收';
-          } else {
-            this.errorMessage = '验证码发送失败';
+      // 发送验证码的函数
+      sendVerificationCode() {
+        uni.request({
+          url: 'http://localhost:8080/api/sms/sendCode',
+          method: 'POST',
+          data: {
+            phone: this.phone,
+          },
+          success: (response) => {
+            if (response.statusCode === 200) {
+              console.log("验证码发送成功");
+              this.errorMessage = '验证码已发送，请查收';
+            } else {
+              this.errorMessage = '验证码发送失败，请稍后再试';
+            }
+          },
+          fail: (error) => {
+            this.errorMessage = '网络错误，请重试';
+            console.error("验证码请求失败", error);
           }
-        },
-        fail: (error) => {
-          this.errorMessage = '网络错误，请重试';
-          console.error("验证码请求失败", error);
-        }
-      });
-    },
+        });
+      },
 
     // 验证验证码是否正确
     verifyCode() {
@@ -111,7 +134,6 @@ export default {
       });
     },
 
-    // 注册逻辑
     async load() {
       if (!this.phone || !this.code) {
         this.errorMessage = '请完整填写手机号和验证码';

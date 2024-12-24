@@ -78,14 +78,14 @@
 		"path" : "pages/login/register/register",
 		"style" : 
 		{
-			"navigationStyle": "custom"
+			"navigationBarTitleText": "注册"
 		}
 	},
 	{
 		"path" : "pages/login/verifyLogin/verifyLogin",
 		"style" : 
 		{
-			"navigationBarTitleText" : "custom"
+			"navigationBarTitleText" : "验证码登录"
     }
   },
 	{

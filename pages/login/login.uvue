@@ -1,5 +1,6 @@
 <template>
   <view class="login-container">
+	<image class="logo" src="/static/images/遗光.png"></image>
     <view class="form">
       <view class="input-group">
         <text class="label">手机号码</text>
@@ -125,10 +126,13 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  background-color: rgb(238, 225, 215);
+  height: 90vh;
+  background-color: rgb(238, 225, 215); 
 }
-
+.logo{
+	width:90px;
+	height:80px;
+}
 .form {
   width: 80%;
   max-width: 400px;
@@ -187,7 +191,7 @@ export default {
 .action-button {
   width: 100%;
   padding: 10px;
-  background-color: rgb(238, 225, 215);
+  background-color: #fcc8c9;
   color: black;
   margin-top: 10px;
   border: none;
