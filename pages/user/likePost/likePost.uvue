@@ -82,7 +82,8 @@ export default {
 <style>
 .container {
   padding: 20px;
-  background-color: #f5f5f5;
+  background-color: #fffaf2;
+  height:100%;
   font-family: Arial, sans-serif;
 }
 

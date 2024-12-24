@@ -78,7 +78,7 @@
 		"path" : "pages/login/register/register",
 		"style" : 
 		{
-			"navigationBarTitleText" : "custom"
+			"navigationStyle": "custom"
 		}
 	},
 	{
@@ -99,6 +99,7 @@
 		"path" : "pages/user/likePost/likePost",
 		"style" : 
 		{
+
 			"navigationBarTitleText" : "我点赞的帖子"
 		}
 	},
@@ -148,7 +149,7 @@
 		"path" : "pages/shop/SalePage/SalePage",
 		"style" : 
 		{
-			"navigationBarStyle": "custom"
+			"navigationStyle": "custom"
 		}
 	},
 	{

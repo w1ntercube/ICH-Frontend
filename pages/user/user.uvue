@@ -59,6 +59,7 @@ export default {
     return {
       defaultAvatar: 'https://example.com/default-avatar.jpg', // 默认头像 URL
       userInfo: {
+		userid:0,
         username: '',
         bio: '',
         profilePicture: null,
@@ -87,7 +88,7 @@ export default {
       if (this.userInfo.role === 'ADMIN') {
         this.buttons = this.allButtons; // 显示所有按钮
         return '管理员';
-      } else if (this.userInfo.role === 'HERITAGE_INHERITOR') {
+      } else if (this.userInfo.role === 'APPRAISER') {
         this.buttons = this.allButtons; // 显示所有按钮
         return '非遗传承人';
       } else {
@@ -285,10 +286,11 @@ export default {
   
     // 跳转到指定页面
     goToPage(button) {
+      const userId = this.userInfo.userid;
       uni.navigateTo({
-        url: button.page,
+        url: `${button.page}?userId=${userId}`,
       });
-    }
+    },
   },
 
   mounted() {

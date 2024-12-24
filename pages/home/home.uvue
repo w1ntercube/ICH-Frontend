@@ -143,7 +143,7 @@ export default {
   flex-direction: row; /* 水平排列按钮 */
   justify-content: space-between; 
   width: 100%; 
-  padding: 5px 5px; 
+  padding: 5px 15px; 
 
 }
 
@@ -154,7 +154,7 @@ export default {
   align-items: center;
   justify-content: center;
   width: 100px;
-  height: 110px;
+  height: 130px;
   border-radius: 15px;
   padding-top:10px;
   padding-bottom: 10px;
@@ -162,8 +162,8 @@ export default {
 
 /* 按钮图标 */
 .button-icon {
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   margin-bottom: 8px;
 }
 
@@ -174,7 +174,7 @@ export default {
   align-items: center;
   justify-content: center;
   width: 80px; /* 按钮背景宽度 */
-  height: 100px; /* 按钮背景高度 */
+  height: 120px; /* 按钮背景高度 */
   background-color: #fedec8; /* 圆角矩阵背景色 */
   border-radius: 15px; /* 圆角效果 */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
@@ -183,7 +183,7 @@ export default {
 /* 按钮文字 */
 .button-text {
   font-weight: bold;
-  font-size: 14px;
+  font-size: 16px;
   color: #79654b;
 }
 
