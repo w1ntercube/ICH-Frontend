@@ -150,7 +150,7 @@ export default {
 /* 全局容器 */
 .container {
   padding: 16px;
-  background-color: #ffffff;
+  background-color: #fffaf2;
 }
 
 /* 活动图片 */

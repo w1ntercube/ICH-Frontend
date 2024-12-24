@@ -85,7 +85,7 @@
 		"path" : "pages/login/verifyLogin/verifyLogin",
 		"style" : 
 		{
-			"navigationBarTitleText" : ""
+			"navigationBarTitleText" : "custom"
     }
   },
 	{
@@ -99,7 +99,8 @@
 		"path" : "pages/user/likePost/likePost",
 		"style" : 
 		{
-			"navigationBarTitleText" : "我的点赞"
+
+			"navigationBarTitleText" : "我点赞的帖子"
 		}
 	},
 	{
@@ -113,7 +114,7 @@
 		"path" : "pages/user/favouritePost/favouritePost",
 		"style" : 
 		{
-			"navigationBarTitleText" : "我的收藏"
+			"navigationBarTitleText" : "我收藏的帖子 "
 		}
 	},
 	{
@@ -134,7 +135,7 @@
 		"path" : "pages/user/changeEvent/changeEvent",
 		"style" : 
 		{
-			"navigationBarTitleText" : "更改活动"
+			"navigationBarTitleText" : "修改活动"
 		}
 	},
 	{

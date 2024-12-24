@@ -79,7 +79,7 @@ export default {
               // 如果返回的 data 中包含 token，说明登录成功
               const token = responseData.data.token;
               const tokenWithBearer = 'Bearer ' + token; // 在 token 前面加上 "Bearer " 字符串
-			uni.setStorageSync('token', tokenWithBearer); // 使用 sync 版本存储 token
+				uni.setStorageSync('token', tokenWithBearer);
               console.log('Token stored:', tokenWithBearer);
 			  // 跳转到 TabBar 页面
               uni.switchTab({

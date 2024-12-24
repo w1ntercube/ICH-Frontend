@@ -43,6 +43,11 @@
         <text>{{ button.name }}</text>  <!-- 确保这里是 button.name -->
         <image src="/static/images/详情.png" alt="详情图标" class="button-icon" />
       </button>
+	  <!-- 退出登录按钮 -->
+	    <button class="action-button" @click="logout">
+	      <text>退出登录</text>
+		  <image src="/static/images/详情.png" alt="详情图标" class="button-icon" />
+	    </button>
     </view>
 
   </view>
@@ -54,6 +59,7 @@ export default {
     return {
       defaultAvatar: 'https://example.com/default-avatar.jpg', // 默认头像 URL
       userInfo: {
+		userid:0,
         username: '',
         bio: '',
         profilePicture: null,
@@ -91,6 +97,14 @@ export default {
     }
   },
   methods: {
+	  logout() {
+	      // 清除本地存储中的 token
+	      uni.removeStorageSync('token');
+	      // 跳转到登录页（你可以根据需要修改这个页面的路径）
+	      uni.navigateTo({
+	        url: '/pages/login/login',  // 跳转到登录页面
+	      });
+		  },
     // 获取用户信息
     getUserInfo() {
       const token = uni.getStorageSync('token'); // 从本地存储获取 token
@@ -271,15 +285,19 @@ export default {
   
     // 跳转到指定页面
     goToPage(button) {
+      const userId = this.userInfo.userid;
       uni.navigateTo({
-        url: button.page,
+        url: `${button.page}?userId=${userId}`,
       });
-    }
+    },
   },
 
   mounted() {
     this.getUserInfo(); // 组件加载时获取用户信息
-  }
+  },
+  onShow() {
+      this.getUserInfo(); // 每次页面重新显示时重新获取用户信息
+    }
 };
 </script>
 
@@ -412,7 +430,7 @@ export default {
   display: flex;
   flex-direction: column;
   width: 80%;
-  margin-top: 20px;
+  margin-top: 10px;
   margin-left: 10%;
   padding-bottom: 15px;
 }
@@ -421,7 +439,7 @@ export default {
 .action-button {
   background: rgb(255, 250, 242);
   border: none;
-  height: 40px;
+  height: 35px;
   padding: 5px 20px;
   border-radius: 15px;
   color: #333;

@@ -1,7 +1,8 @@
 <template>
   <view class="container">
+	  
+	<view class="location-bar">
     <!-- 定位区域 -->
-    <view class="location-bar">
       <image class="location-icon" src="/static/images/events.png"></image>
       <text class="location-text">{{ location }}</text>
     </view>
@@ -16,7 +17,7 @@
 			</view>
 			<input
 			  class="search-input"
-			  placeholder="搜索活动内容、举办地..."
+			  placeholder="搜索活动标题、地点..."
 			  confirm-type="search"
 			  @confirm="onSearch"
 			/>
@@ -217,34 +218,33 @@ export default {
   justify-content: center;
   flex-direction: column;
   padding: 10px;
+  background-color: #fffaf2;
 }
 
 .location-bar {
-  display: flex;
-  align-items: center;
-  height: 100%;
+  display: flex; /* Flexbox 布局 */
+  align-items: center; /* 垂直居中对齐 */
+  justify-content: flex-start; /* 水平方向从左到右排列 */
+  height: 60px; /* 设置固定高度，确保布局稳定 */
   padding: 10px;
-  background-color: #fffaf2;
-  border-radius: 8px;
+  background-color: #fffaf2; /* 设置背景色 */
+  border-radius: 8px; /* 设置圆角 */
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* 添加轻微阴影 */
 }
 
 .location-icon {
-  width: 24px;
-  height: 24px;
-  margin-right: 10px;
+  width: 24px; /* 图标宽度 */
+  height: 24px; /* 图标高度 */
+  margin-right: 10px; /* 图标与文本之间的间距 */
 }
 
-.text {
-  font-size: 50px;
-  color: #bf7977;
-  }
-
 .location-text {
-  font-size: 16px;
-  color: #333;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 16px; /* 设置文字大小 */
+  color: #333333; /* 设置文字颜色 */
+  font-weight: 500; /* 设置文字权重 */
+  white-space: nowrap; /* 防止文字换行 */
+  overflow: hidden; /* 如果文字过长，隐藏溢出部分 */
+  text-overflow: ellipsis; /* 溢出时显示省略号 */
 }
 
 .section-header {
